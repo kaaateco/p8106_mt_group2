@@ -1,0 +1,16 @@
+---
+title: "mt_group2"
+author: "Kate Colvin (KAC2301), , and"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Exploratory Analysis 
+
+```{r}
+
+```
+
