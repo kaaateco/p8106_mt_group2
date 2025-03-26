@@ -1,0 +1,21 @@
+---
+title: "P8106 Midterm Report"
+author: "Group 2: Kate Colvin (KAC2301), , and"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Exploratory Analysis 
+
+
+# Model Training
+
+
+# Results 
+
+
+
+# Appendix 

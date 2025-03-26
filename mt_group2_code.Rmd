@@ -1,6 +1,6 @@
 ---
-title: "mt_group2"
-author: "Kate Colvin (KAC2301), , and"
+title: "P8106 Midterm Code"
+author: "Group 2: Kate Colvin (KAC2301), , and"
 output: pdf_document
 ---
 
@@ -28,4 +28,17 @@ dat2 <- dat2 %>%janitor::clean_names()
 
 ```
 
-# 
+# Model Training
+
+```{r}
+
+
+```
+
+
+# Results
+
+```{r}
+
+```
+
