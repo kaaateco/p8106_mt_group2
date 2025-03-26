@@ -1,17 +1,19 @@
 ---
 title: "P8106 Midterm Code"
-author: "Group 2: Kate Colvin (KAC2301), , and"
+author: "Group 2: Kate Colvin (KAC2301), Jeong Yun (Lizy) Choi (JC6452), and"
 output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+library(gtsummary)
+library(gt)
 ```
 
 # Exploratory Analysis 
 
-Loading in data files
+## Loading in data files
 
 ```{r}
 
@@ -23,10 +25,72 @@ dat2 <- dat2 %>%janitor::clean_names()
 
 ```
 
+## Producing summary table
+
+Notes
+
+Training and test data have the same distribution of demographic characteristics; there is a difference in time since vaccination between training and test data  
+
+```{r}
+
+# Combining data for summary table, data cleaning
+dat1_com <- dat1 %>% mutate(set = "Training Data")
+dat2_com <- dat2 %>% mutate(set = "Testing Data")
+
+dat <- dat1_com %>% 
+  rbind(dat2_com) %>% 
+  rename(days_vaccinated = time) %>% 
+  mutate(race = as.character(race), 
+         smoking = as.character(smoking)) %>% 
+  mutate(race = case_match(
+        race, 
+           "1" ~ "White",
+           "2" ~ "Asian", 
+           "3" ~ "Black", 
+           "4" ~ "Hispanic"),
+         gender = case_match(
+           gender, 
+           1 ~ "Male", 
+           0 ~ "Female"), 
+         smoking = case_match(
+           smoking, 
+           "0" ~ "Never", 
+           "1" ~ "Former", 
+           "2" ~ "Current"))
+
+# Summary table
+dat %>% select(!id) %>% 
+  tbl_summary(
+    by = set, 
+    label = list(age = "Age", 
+                 gender = "Gender", 
+                 race = "Race", 
+                 smoking = "Smoking", 
+                 height = "Height (cm)", 
+                 weight = "Weight (kg)", 
+                 bmi = "BMI", 
+                 diabetes = "Diabetes", 
+                 hypertension = "Hypertension", 
+                 sbp = "Systolic Blood Pressure (mmHg)", 
+                 ldl = "LDL Cholesterol (mg/dL)", 
+                 days_vaccinated = "Time Since Vaccinated (days)", 
+                 log_antibody = "Log-Transformed Antibody Level")) %>% 
+  add_overall() %>% 
+  modify_caption("Summary of Patient Testing and Training Data (N=6000)") %>% 
+  as_gt() %>% 
+  tab_options(table.font.size = 12)
+
+```
+
+
+## Correlation matrix of numerical variables 
+
 ```{r}
 
 
+
 ```
+
 
 # Model Training
 
