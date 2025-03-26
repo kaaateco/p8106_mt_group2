@@ -1,12 +1,36 @@
 ---
 title: "P8106 Midterm Report"
-author: "Group 2: Kate Colvin (KAC2301), , and"
-output: pdf_document
+author: "Group 2: Kate Colvin (KAC2301), Jeong Yun (Lizy) Choi (JC6452), and"
+mainfont: Arial
+fontsize: 11pt
+output: 
+  pdf_document:
+  latex_engine: xelatex
+  extra_dependencies: ["float"]
+header-includes: 
+- \usepackage{setspace}\doublespacing
+- \usepackage{titling}
+- \setlength{\droptitle}{-4cm}
+- \usepackage[medium]{titlesec} 
+urlcolor: blue
 ---
-
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+
+knitr::opts_chunk$set(
+	echo = TRUE,
+	warning = FALSE,
+	fig.width = 7, 
+  fig.height = 5,
+  out.width = "90%", 
+	fig.align = "center", 
+	fig.pos = "H"
+)
+
 ```
+# Introducton
+In this project, our team explored the dataset collected from a study on evaluating antibody responses to a newly authorized vaccine. The primary outcome of interest is the log-transformed antibody level measured via dried blood spots. The dataset includes a range of demographic and clinical predictors such as age, gender, race/ethnicity, smoking status, BMI, chronic conditions, and time since vaccination.
+
+Our goal is to develop a predictive model that characterizes how these factors influence antibody responses and asses how well this model generalizes to a new independent dataset collected at a later time point. By doing so, we hope to identify key predictors of antibody levels and evaluate the robustness/generalizability of our model across different dataset. 
 
 # Exploratory Analysis 
 
@@ -17,5 +41,6 @@ knitr::opts_chunk$set(echo = TRUE)
 # Results 
 
 
-
 # Appendix 
+
+
