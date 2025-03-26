@@ -6,11 +6,26 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
 ```
 
 # Exploratory Analysis 
 
+Loading in data files
+
 ```{r}
+
+load("dat1.RData") 
+load("dat2.RData")
+
+dat1 <- dat1 %>% janitor::clean_names()
+dat2 <- dat2 %>%janitor::clean_names()
 
 ```
 
+```{r}
+
+
+```
+
+# 
