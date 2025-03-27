@@ -239,7 +239,7 @@ plot_age
 
 \newpage
 
-# Model Training
+# Model Selection and Training
 
 Since the response variable (log_antibody) is continuous, this project will consider the following models:
 
@@ -363,6 +363,42 @@ mars_rmse <- sqrt(mean((mars_pred - valid_data$log_antibody)^2))
 mars_rmse
 ```
 
+* The MARS model achieves the lowest RMSE. Therefore MARS will be used as the preferred model for predicting log_antibody. Although further fine-tuning and additional feature exploration could further enhance the model's predictive power.
+
+### MARS model tuning
+
+```{r}
+tune_grid <- expand.grid(degree = 1:3, nprune = seq(5, 50, by = 5))
+
+train_control <- trainControl(method = "cv", number = 10)
+mars_tune <- train(log_antibody ~ ., data = train_data, method = "earth", 
+                   trControl = train_control, tuneGrid = tune_grid)
+
+mars_tune$bestTune
+```
+
+```{r}
+train_control <- trainControl(method = "cv", number = 10)
+
+# Train the MARS model with best tuning parameters
+mars_model_tune <- train(log_antibody ~ ., 
+                         data = train_data, 
+                         method = "earth", 
+                         trControl = train_control, 
+                         tuneGrid = data.frame(nprune = 10, degree = 1))
+
+summary(mars_model_tune)
+
+mars_tune_pred <- predict(mars_model_tune, newdata = valid_data)
+mars_tune_rmse <- sqrt(mean((mars_tune_pred - valid_data$log_antibody)^2))
+mars_tune_rmse
+```
+
+
+```{r}
+plot(mars_model)
+plot(mars_model, which = 1)
+```
 
 
 \newpage
