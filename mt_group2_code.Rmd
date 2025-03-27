@@ -11,6 +11,11 @@ library(gtsummary)
 library(gt)
 library(corrplot)
 library(kableExtra)
+
+library(tidyverse)
+library(caret)
+library(glmnet) 
+library(randomForest) 
 ```
 
 # Exploratory Analysis 
@@ -237,10 +242,58 @@ plot_age
 
 # Model Training
 
-```{r}
+Since the response variable (log_antibody) is continuous, this project will consider the following models:
 
+* Multiple Linear Regression (MLR) - as a baseline.
+
+* LASSO Regression – to improve predictive performance by selecting important predictors.
+
+* Random Forest Regression – to capture nonlinear relationships.
+
+After comparing model performance, the best model will be based on cross-validation results.
+
+## Data Pre-processing
+
+```{r}
+# Converting categorical variables into factors
+dat1 <- dat1 %>%
+  mutate(
+    gender = factor(gender, levels = c(0, 1), labels = c("Female", "Male")),
+    race = factor(race, levels = c(1, 2, 3, 4), labels = c("White", "Asian", "Black", "Hispanic")),
+    smoking = factor(smoking, levels = c(0, 1, 2), labels = c("Never", "Former", "Current")),
+    diabetes = factor(diabetes),
+    hypertension = factor(hypertension)
+  )
+
+dat2 <- dat2 %>%
+  mutate(
+    gender = factor(gender, levels = c(0, 1), labels = c("Female", "Male")),
+    race = factor(race, levels = c(1, 2, 3, 4), labels = c("White", "Asian", "Black", "Hispanic")),
+    smoking = factor(smoking, levels = c(0, 1, 2), labels = c("Never", "Former", "Current")),
+    diabetes = factor(diabetes),
+    hypertension = factor(hypertension)
+  )
 
 ```
+
+```{r}
+sum(is.na(dat1))
+sum(is.na(dat2))
+```
+
+```{r}
+dat1 <- dat1 %>% select(-id)
+dat2 <- dat2 %>% select(-id)
+```
+
+```{r}
+# Split training data into training (80%) and validation (20%)
+set.seed(123)
+train_index <- createDataPartition(dat1$log_antibody, p = 0.8, list = FALSE)
+train_data <- dat1[train_index, ]
+valid_data <- dat1[-train_index, ]
+```
+
 
 \newpage
 
