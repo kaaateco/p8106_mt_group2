@@ -18,14 +18,19 @@ urlcolor: blue
 ```{r setup, include=FALSE}
 
 knitr::opts_chunk$set(
-	echo = TRUE,
+	echo = FALSE, # Hiding code in knitted pdf 
 	warning = FALSE,
 	fig.width = 7, 
   fig.height = 5,
   out.width = "90%", 
 	fig.align = "center", 
-	fig.pos = "H"
-)
+	fig.pos = "H")
+
+library(tidyverse)
+library(gtsummary)
+library(gt)
+library(corrplot)
+library(kableExtra)
 
 ```
 
@@ -50,9 +55,192 @@ for scatter plots
 # Model Training
 
 
+
 # Results 
 
 
-# Appendix 
 
+\newpage
 
+```{r}
+
+load("dat1.RData") 
+load("dat2.RData")
+
+dat1 <- dat1 %>% janitor::clean_names()
+dat2 <- dat2 %>%janitor::clean_names()
+
+```
+
+```{r}
+
+# Combining data for summary table, data cleaning
+dat1_com <- dat1 %>% mutate(set = "Training Data")
+dat2_com <- dat2 %>% mutate(set = "Testing Data")
+
+dat <- dat1_com %>% 
+  rbind(dat2_com) %>% 
+  rename(days_vaccinated = time) %>% 
+  mutate(race = as.character(race), smoking = as.character(smoking)) %>% 
+  mutate(race = case_match(
+        race, "1" ~ "White", "2" ~ "Asian", "3" ~ "Black", "4" ~ "Hispanic"),
+         gender = case_match(gender, 1 ~ "Male", 0 ~ "Female"), 
+         smoking = case_match(
+           smoking, "0" ~ "Never", "1" ~ "Former", "2" ~ "Current"))
+
+# Summary table
+dat %>% select(!id) %>% 
+  tbl_summary(
+    by = set, 
+    label = list(age = "Age", gender = "Gender", race = "Race", smoking = "Smoking", 
+                 height = "Height (cm)", weight = "Weight (kg)", bmi = "BMI", 
+                 diabetes = "Diabetes", hypertension = "Hypertension", 
+                 sbp = "Systolic Blood Pressure (mmHg)", ldl = "LDL Cholesterol (mg/dL)", 
+                 days_vaccinated = "Time Since Vaccinated (days)", 
+                 log_antibody = "Log-Transformed Antibody Level")) %>% 
+  add_overall() %>% add_p() %>% 
+  modify_caption("Summary of Patient Testing and Training Data (N=6000)") %>% 
+  as_gt() %>% tab_options(table.font.size = 10)
+
+```
+
+```{r, out.width = "95%", fig.align = "center"}
+
+# Antibody level 
+plot_sets <- dat %>%  
+  ggplot(aes(x = log_antibody, 
+             fill = set, 
+             color = set)) +
+  geom_density(alpha = 0.3, linewidth = 1) +
+  labs(x = "Log-Transformed Antibody Level", 
+       y = "Density", 
+       title = "Figure 1: Distribution of Log-Transformed Antibody Level, by Data Set") +
+  theme_minimal()
+
+# Time since vaccination (days)
+plot_days <- dat %>%  
+  ggplot(aes(x = days_vaccinated, 
+             fill = set, 
+             color = set)) +
+  geom_density(alpha = 0.3, linewidth = 1) +
+  labs(x = "Time Since Vaccinated (days)", 
+       y = "Density", 
+       title = "Figure 2: Distribution of Days Since Vaccination, by Data Set") +
+  theme_minimal()
+
+plot_sets
+plot_days
+
+```
+
+```{r, out.width = "95%", fig.align = "center"}
+# Antibody level, by gender
+plot_gender <- dat %>%  
+  ggplot(aes(x = log_antibody, fill = gender, color = gender)) +
+  geom_density(alpha = 0.3, linewidth = 1) +
+  labs(x = "Log-Transformed Antibody Level", y = "Density", 
+       title = "Figure 3: Distribution of Log-Transformed Antibody Level, by Gender") +
+  theme_minimal()
+plot_gender
+
+# Antibody level, by race
+plot_race <- dat %>%  
+  ggplot(aes(x = log_antibody, fill = race, color = race)) +
+  geom_density(alpha = 0.3, linewidth = 1) +
+  labs(x = "Log-Transformed Antibody Level", 
+       y = "Density", 
+       title = "Figure 4: Distribution of Log-Transformed Antibody Level, by Race") +
+  theme_minimal()
+plot_race
+
+# Antibody level, by smoking status 
+plot_smoking <- dat %>%  
+  ggplot(aes(x = log_antibody, fill = smoking, color = smoking)) +
+  geom_density(alpha = 0.3, linewidth = 1) +
+  labs(x = "Log-Transformed Antibody Level", 
+       y = "Density", 
+       title = "Figure 5: Distribution of Log-Transformed Antibody Level, by Smoking") +
+  theme_minimal()
+plot_smoking
+
+```
+
+```{r}
+
+dat %>% select(gender, log_antibody) %>% 
+  tbl_summary(by = gender) %>% add_p() %>% 
+  modify_caption("Log-Transformed Antibody Level, by Gender") %>% 
+  as_gt() %>% tab_options(table.font.size = 11)
+
+dat %>% 
+  select(race, log_antibody) %>% 
+  tbl_summary(by = race) %>% 
+    add_p() %>% 
+  modify_caption("Log-Transformed Antibody Level, by Race") %>% 
+  as_gt() %>% tab_options(table.font.size = 11)
+
+dat %>% select(smoking, log_antibody) %>% 
+  tbl_summary(by = smoking) %>% 
+    add_p() %>% 
+  modify_caption("Log-Transformed Antibody Level, by Smoking Status") %>% 
+  as_gt() %>% tab_options(table.font.size = 11)
+
+```
+
+```{r, warning=FALSE}
+
+cor_matrix <- dat %>% 
+  select(age, height, weight, bmi, sbp, ldl, days_vaccinated, log_antibody) %>% 
+  rename("Age" = age, 
+         "Height" = height,
+         "Weight" = weight,
+         "BMI" = bmi,
+         "SBP" = sbp, 
+         "LDL" = ldl,
+         "Days Vaccinated" = days_vaccinated, 
+         "Log(Antibody)" = log_antibody) %>% 
+  cor()
+
+cor_plot <- corrplot(cor_matrix,  
+                     main = "Figure 6: Correlation Matrix of Numerical Variables", 
+                     mar=c(0,0,1,0), cex.main = 1,
+                     method = "color", 
+                     addCoef.col = "black", 
+                     tl.col = "black", 
+                     number.cex = 0.8, 
+                     tl.srt = 45, 
+                     order = 'original', 
+                     diag = F)
+
+```
+
+```{r, message=FALSE, out.width="90%", fig.align = "center"}
+# Antibody level vs. BMI
+plot_bmi <- dat %>% ggplot(aes(x = bmi, y = log_antibody, fill = set, color = set)) +
+  geom_point(alpha = 0.3, size = 2) +
+  geom_smooth(method = "lm") +
+  labs(y = "Log-Transformed Antibody Level", x = "BMI", 
+       title = "Figure 7: Log-Transformed Antibody Level vs. BMI") +
+  theme_minimal()
+
+# Antibody level vs. Weight
+plot_weight <- dat %>% 
+  ggplot(aes(x = weight, y = log_antibody, fill = set, color = set)) +
+  geom_point(alpha = 0.3, size = 2) +
+  geom_smooth(method = "lm") +
+  labs(y = "Log-Transformed Antibody Level", x = "Weight", 
+       title = "Figure 8: Log-Transformed Antibody Level vs. Weight") +
+  theme_minimal()
+
+# Antibody level vs. Age
+plot_age <- dat %>% ggplot(aes(x = age, y = log_antibody, fill = set, color = set)) +
+  geom_point(alpha = 0.3, size = 2) + geom_smooth(method = "lm") +
+  labs(y = "Log-Transformed Antibody Level", x = "Age", 
+       title = "Figure 9: Log-Transformed Antibody Level vs. Age") +
+  theme_minimal()
+
+plot_bmi
+plot_weight
+plot_age
+
+```
