@@ -1,6 +1,6 @@
 ---
 title: "P8106 Midterm - Report"
-author: "Group 2: Kate Colvin (KAC2301), Jeong Yun (Lizy) Choi (JC6452), and"
+author: "Group 2: Kate Colvin (KAC2301), Jeong Yun (Lizy) Choi (JC6452), and Flora Pang (FP2513)"
 mainfont: Arial
 fontsize: 11pt
 output: 
