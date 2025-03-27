@@ -54,6 +54,12 @@ for scatter plots
 
 # Model Training
 
+In this analysis, three regression models — Multiple Linear Regression (MLR), Lasso, and Multivariate Adaptive Regression Splines (MARS)—were evaluated for predicting log-transformed antibody levels. Each model was assessed using Root Mean Squared Error (RMSE) to determine their predictive accuracy.
+
+The MLR model showed that several predictors, including age, gender, smoking status, height, and bmi, significantly influenced log_antibody. However, the model's RMSE of 0.5444 indicates moderate prediction accuracy. Additionally, the Lasso model, which applies regularization to shrink less important coefficients, yielded a similar RMSE of 0.5445. This indicates that Lasso did not significantly improve predictive accuracy over MLR.
+
+The MARS model, on the other hand, demonstrated the best performance, with an RMSE of 0.5286. MARS captures nonlinear relationships and interactions between predictors, leading to better predictive accuracy. Therefore, MARS will be used as the preferred model for predicting log_antibody. Although further fine-tuning and additional feature exploration could further enhance the model's predictive power.
+
 
 
 # Results 
