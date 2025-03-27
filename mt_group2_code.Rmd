@@ -247,7 +247,7 @@ Since the response variable (log_antibody) is continuous, this project will cons
 
 * LASSO Regression – to improve predictive performance by selecting important predictors.
 
-* Random Forest Regression – to capture nonlinear relationships.
+* MARS model – allow remain in regression but also capture nonlinear effects
 
 After comparing model performance, the best model will be based on cross-validation results.
 
@@ -346,6 +346,23 @@ lasso_pred <- predict(lasso_final, newx = x_valid)
 lasso_rmse <- sqrt(mean((lasso_pred - y_valid)^2))
 lasso_rmse
 ```
+
+
+## Training MARS model 
+
+```{r}
+mars_model <- earth(log_antibody ~ ., data = train_data)
+summary(mars_model)
+```
+
+```{r}
+# predicting with MARS on validation data
+
+mars_pred <- predict(mars_model, newdata = valid_data)
+mars_rmse <- sqrt(mean((mars_pred - valid_data$log_antibody)^2))
+mars_rmse
+```
+
 
 
 \newpage
