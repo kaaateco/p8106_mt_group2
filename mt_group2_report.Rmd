@@ -54,11 +54,63 @@ for scatter plots
 
 # Model Training
 
-In this analysis, three regression models — Multiple Linear Regression (MLR), Lasso, and Multivariate Adaptive Regression Splines (MARS)—were evaluated for predicting log-transformed antibody levels. Each model was assessed using Root Mean Squared Error (RMSE) to determine their predictive accuracy.
+In this analysis, we trained three different models: Multiple Linear Regression (MLR), LASSO Regression, and Multivariate Adaptive Regression Splines (MARS). We ultimately selected MARS as the final model, after fine-tuning it using cross-validation. The following sections provide a detailed account of each step in the model training process, from pre-processing to final model selection.
 
-The MLR model showed that several predictors, including age, gender, smoking status, height, and bmi, significantly influenced log_antibody. However, the model's RMSE of 0.5444 indicates moderate prediction accuracy. Additionally, the Lasso model, which applies regularization to shrink less important coefficients, yielded a similar RMSE of 0.5445. This indicates that Lasso did not significantly improve predictive accuracy over MLR.
+## Data Pre-processing
 
-The MARS model, on the other hand, demonstrated the best performance, with an RMSE of 0.5286. MARS captures nonlinear relationships and interactions between predictors, leading to better predictive accuracy. Therefore, MARS will be used as the preferred model for predicting log_antibody. Although further fine-tuning and additional feature exploration could further enhance the model's predictive power.
+Before modeling, the data underwent the following pre-processing steps:
+
+* Handling Missing Values: We ensured that there were no missing values in the training data. Any missing data would be imputed or removed as appropriate.
+
+* Feature Engineering: Continuous variables were used as they were, while categorical variables were converted to factor types (such as race, gender, smoking). 
+
+* Log Transformation: The response variable, log antibody, was log-transformed to normalize its distribution and reduce skewness.
+
+* Also transformed the data
+
+## Multiple Linear Regression (MLR) Model 
+
+We started by fitting a MLR model with all available predictors in the dataset and the model was fit using ordinary least squares regression (OLS).
+
+The model was trained using the lm() function and the training process involved fitting the model to the data, estimating the regression coefficients for each predictor, and computing the residuals. The code below was used:
+
+```{r eval = FALSE}
+mlr_model <- lm(log_antibody ~ ., data = train_data)
+```
+
+
+The residuals showed a reasonable fit with no large deviations. Key predictors such as age, gender, bmi, and smoking status showed statistically significant effects, while others, such as race and diabetes, did not appear significant based on p-values.
+
+The coefficients were estimated through OLS regression, and the residuals were checked for normality. The model was trained on the entire training dataset, and no regularization was applied.
+
+The training outcome included the estimated coefficients for each feature in the dataset, with significance levels for each predictor.
+
+Overall, the Root Mean Squared Error (RMSE) was 0.544. 
+
+
+## LASSO Model 
+
+To address potential multi-collinearity and perform feature selection, we used LASSO Regression, applying L1 regularization to shrink the coefficients of less important features to zero.
+
+In terms of model selection, the best lambda (penalty term) was selected based on cross-validation, which helps to balance model fit and complexity. The model with the lowest cross-validation error was used for evaluation.
+
+The Root Mean Squared Error (RMSE) for LASSO was calculated as 0.544, similar to MLR, indicating comparable predictive performance.
+
+## Multivariate Adaptive Regression Splines (MARS) Model 
+
+Non-linear regression MARS model automatically selects the best interactions and non-linear transformations of predictors. 
+
+We first trained the MARS model without tuning. This resulted in a complex model of about 13 terms and multiple interactions selected. While it provided a reasonable fit, we sought to prune the model to avoid overfitting.
+
+We fine-tuned the MARS model using cross-validation to determine the optimal number of terms and the degree of interactions. The best parameters were selected as follows:
+
+* nprune = 10: The final model had 10 terms, which were selected based on the lowest Generalized Cross Validation (GCV) score.
+
+* degree = 1: The degree of interaction was set to 1, which considers only pairwise interactions between features.
+
+We then fit the final MARS model with those tuned parameters. The RMSE for the tuned MARS model was 0.528, which was slightly better than the MLR and LASSO models. This suggests that the MARS model, after tuning, offers improved predictive performance while avoiding over-fitting.
+
+Based on the RMSE and the results of model selection, MARS was chosen as the final model due to its superior performance and ability to capture complex non-linear relationships between the predictors and the antibody levels. The final MARS model with 10 terms and degree 1 interactions was retained for further evaluation.
 
 
 
