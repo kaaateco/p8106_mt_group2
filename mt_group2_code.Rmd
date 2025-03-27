@@ -12,10 +12,9 @@ library(gt)
 library(corrplot)
 library(kableExtra)
 
-library(tidyverse)
 library(caret)
 library(glmnet) 
-library(randomForest) 
+library(earth) 
 ```
 
 # Exploratory Analysis 
@@ -308,6 +307,44 @@ summary(mlr_model)
 mlr_pred <- predict(mlr_model, newdata = valid_data)
 mlr_rmse <- sqrt(mean((mlr_pred - valid_data$log_antibody)^2))
 mlr_rmse
+```
+
+## Training LASSO regression model
+
+### Standardizing numerical variables for LASSO 
+
+```{r}
+num_vars <- c("age", "height", "weight", "bmi", "sbp", "ldl", "time")
+
+preprocess_params <- preProcess(train_data[, num_vars], method = c("center", "scale"))
+train_data[, num_vars] <- predict(preprocess_params, train_data[, num_vars])
+valid_data[, num_vars] <- predict(preprocess_params, valid_data[, num_vars])
+dat2[, num_vars] <- predict(preprocess_params, dat2[, num_vars]) # Applying same transformation to test data
+```
+
+```{r}
+# Preparing the data matrices for glmnet
+x_train <- model.matrix(log_antibody ~ ., train_data)[, -1]  # Removing the intercept
+y_train <- train_data$log_antibody
+
+x_valid <- model.matrix(log_antibody ~ ., valid_data)[, -1]
+y_valid <- valid_data$log_antibody
+```
+
+```{r}
+set.seed(123)
+lasso_model <- cv.glmnet(x_train, y_train, alpha = 1) # LASSO with cross validation
+
+best_lambda <- lasso_model$lambda.min
+lasso_final <- glmnet(x_train, y_train, alpha = 1, lambda = best_lambda) # final model is based on optimal lambda
+```
+
+```{r}
+# predicting with LASSO on validation data
+
+lasso_pred <- predict(lasso_final, newx = x_valid)
+lasso_rmse <- sqrt(mean((lasso_pred - y_valid)^2))
+lasso_rmse
 ```
 
 
