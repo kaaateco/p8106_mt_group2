@@ -295,6 +295,22 @@ valid_data <- dat1[-train_index, ]
 ```
 
 
+## Training multiple linear regression model 
+
+```{r}
+mlr_model <- lm(log_antibody ~ ., data = train_data)
+summary(mlr_model)
+```
+
+
+```{r}
+# Evaluating model performance on validation data
+mlr_pred <- predict(mlr_model, newdata = valid_data)
+mlr_rmse <- sqrt(mean((mlr_pred - valid_data$log_antibody)^2))
+mlr_rmse
+```
+
+
 \newpage
 
 # Results
