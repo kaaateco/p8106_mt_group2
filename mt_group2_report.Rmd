@@ -38,6 +38,15 @@ Our goal is to develop a predictive model that characterizes how these factors i
 # Exploratory Analysis 
 
 
+notes
+
+for hist
+- more recent vaccines = higher antibody level ? 
+
+for scatter plots
+- testing slopes more flat? 
+
+
 # Model Training
 
 
