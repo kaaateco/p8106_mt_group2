@@ -71,12 +71,13 @@ We started by fitting a MLR model with all available predictors in the dataset a
 
 The model was trained using the lm() function and the training process involved fitting the model to the data, estimating the regression coefficients for each predictor, and computing the residuals. The code below was used:
 
-```{r eval = FALSE}
+
+\begin{verbatim}
 mlr_model <- lm(log_antibody ~ ., data = train_data)
-```
+\end{verbatim}
 
 
-The residuals showed a reasonable fit with no large deviations. Key predictors such as age, gender, bmi, and smoking status showed statistically significant effects, while others, such as race and diabetes, did not appear significant based on p-values.
+The summary results (Figure 7) residuals showed a reasonable fit with no large deviations. Key predictors such as age, gender, bmi, and smoking status showed statistically significant effects, while others, such as race and diabetes, did not appear significant based on p-values.
 
 The coefficients were estimated through OLS regression, and the residuals were checked for normality. The model was trained on the entire training dataset, and no regularization was applied.
 
@@ -87,9 +88,23 @@ Overall, the Root Mean Squared Error (RMSE) was 0.544.
 
 ## LASSO Model 
 
-To address potential multi-collinearity and perform feature selection, we used LASSO Regression, applying L1 regularization to shrink the coefficients of less important features to zero.
+To address potential multi-collinearity and perform feature selection, we used LASSO Regression, applying L1 regularization to shrink the coefficients of less important features to zero. The LASSO model was trained using the glmnet package. 
 
-In terms of model selection, the best lambda (penalty term) was selected based on cross-validation, which helps to balance model fit and complexity. The model with the lowest cross-validation error was used for evaluation.
+The training procedure involved:
+
+*1 Creating a matrix of predictor variables (x) and a vector of the response variable (y)
+
+*2 Using cross-validation to select the best lambda (regularization parameter) based on the model’s performance. The model with the lowest cross-validation error was used for evaluation.
+
+\begin{verbatim}
+
+lasso_model <- cv.glmnet(x_train, y_train, alpha = 1)
+
+best_lambda <- lasso_model$lambda.min
+lasso_final <- glmnet(x_train, y_train, alpha = 1, lambda = best_lambda)
+
+\end{verbatim}
+
 
 The Root Mean Squared Error (RMSE) for LASSO was calculated as 0.544, similar to MLR, indicating comparable predictive performance.
 
@@ -299,3 +314,8 @@ plot_weight
 plot_age
 
 ```
+
+```{r}
+
+```
+
