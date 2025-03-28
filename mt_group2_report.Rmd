@@ -79,6 +79,8 @@ The coefficients were estimated through OLS regression, and the residuals were c
 
 To address potential multi-collinearity and perform feature selection, we used LASSO Regression, applying L1 regularization to shrink the coefficients of less important features to zero. The LASSO model was trained using the glmnet package. 
 
+Since  LASSO is sensitive to differences in scale among predictor variables, numerical predictors were standardized before training to ensure fair comparison across variables. The preProcess() function from the caret package was used. The same transformations were applied to the validation and test datasets to maintain consistency.
+
 The training procedure involved:
 
 1. Creating a matrix of predictor variables (x) and a vector of the response variable (y)
@@ -133,7 +135,7 @@ The intial MARS model resulted in a complex model of 13 terms and multiple inter
 
 We then fit the final MARS model with those tuned parameters. The RMSE for the tuned MARS model was 0.528, which was slightly better than the MLR and LASSO models. This suggests that the MARS model, after tuning, offers improved predictive performance while avoiding over-fitting.
 
-Based on the RMSE and the results of model selection, MARS was chosen as the final model due to its superior performance and ability to capture complex non-linear relationships between the predictors and the antibody levels. The final MARS model with 10 terms and degree 1 interactions was retained for further evaluation.
+Based on the RMSE and the results of model selection, MARS was chosen as the final model due to its superior performance and ability to capture complex non-linear relationships between the predictors and the antibody levels. The final MARS model with 10 terms and degree 1 interactions was retained for further evaluation (Figure 8).
 
 
 \newpage
@@ -321,7 +323,23 @@ plot_age
 
 ```
 
-```{r}
+```{r, eval=FALSE}
+library(knitr)
+library(kableExtra)
 
+summary_table <- summary(mlr_model)$coefficients
+kable(summary_table, digits = 4, caption = "Figure 7. Regression Coefficients for MLR Model") %>%
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover"))
+```
+
+```{r, eval=FALSE}
+library(knitr)
+library(kableExtra)
+
+mars_model <- earth(log_antibody ~ ., data = train_data)
+summary(mars_model)
+
+kable(summary_table, digits = 4, caption = "Figure 8. Regression Coefficients for MARS Model") %>%
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover"))
 ```
 
