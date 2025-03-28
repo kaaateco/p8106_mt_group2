@@ -1,6 +1,6 @@
 ---
 title: "P8106 Midterm - Code"
-author: "Group 2: Kate Colvin (KAC2301), Jeong Yun (Lizy) Choi (JC6452), and Flora Pang (FP2513)"
+author: "Kate Colvin (KAC2301), Jeong Yun (Lizy) Choi (JC6452), and Flora Pang (FP2513)"
 output: pdf_document
 ---
 

@@ -1,6 +1,6 @@
 ---
 title: "P8106 Midterm - Report"
-author: "Group 2: Kate Colvin (KAC2301), Jeong Yun (Lizy) Choi (JC6452), and Flora Pang (FP2513)"
+author: "Kate Colvin (KAC2301), Jeong Yun (Lizy) Choi (JC6452), and Flora Pang (FP2513)"
 mainfont: Arial
 fontsize: 11pt
 output: 
@@ -8,9 +8,8 @@ output:
   latex_engine: xelatex
   extra_dependencies: ["float"]
 header-includes: 
-- \usepackage{setspace}\doublespacing
 - \usepackage{titling}
-- \setlength{\droptitle}{-2cm}
+- \setlength{\droptitle}{-1cm}
 - \usepackage[small]{titlesec} 
 urlcolor: blue
 ---
@@ -42,14 +41,12 @@ Our goal is to develop a predictive model that characterizes how these factors i
 
 # Exploratory Analysis 
 
+Our full combined dataset includes 6,000 patients and contains demographic and health information, time since the patient received the vaccine, and log-transformed antibody level. There are two different subsets of data: data on 5,000 patients was initially collected for model training, and data on 1,000 additional patients was independently collected several months later for model testing and evaluation. 
 
-notes
+Patients in both datasets have similar demographic and health characteristics (Table 1), but patients from the second collected dataset have a greater time since receiving the vaccine (an additional few months), and therefore slightly lower observed log-transformed antibody levels (Figures 1 and 2). Because we are more likely to observe lower antibody levels from patients in the testing dataset, it's possible that this difference may impact the prediction performance of our models, which are trained using the initial dataset. After plotting the most correlated quantitative variables versus log-transformed antibody level, we can see that the fitted line for the testing data is always flatter than the line of the training data, indicating a weaker relationship between these variables and the response (Figures 7-9). 
 
-for hist
-- more recent vaccines = higher antibody level ? 
+Across gender and smoking status, there were very slight differences in the observed antibody levels. Women had slightly greater antibody responses than men overall (Figure 3 and Table 2), while current smokers had slightly lower antibody responses than former and never-smokers (Figure 5 and Table 4). There were no observed differences in antibody responses across race (Figure 4 and Table 3). The quantitative variables that were most correlated with log-transformed antibody level were BMI, weight, and age. It's important to note that several predictors are also correlated with each other, such as BMI and weight, BMI and height, and SBP and age (Figure 6), which will impact variable selection. 
 
-for scatter plots
-- testing slopes more flat? 
 
 
 # Model Training
