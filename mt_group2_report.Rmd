@@ -57,19 +57,15 @@ Across gender and smoking status, there were very slight differences in the obse
 
 # Model Training
 
-In this analysis, we trained three different models: Multiple Linear Regression (MLR), LASSO Regression, and Multivariate Adaptive Regression Splines (MARS). We ultimately selected MARS as the final model, after fine-tuning it using cross-validation. The following sections provide a detailed account of each step in the model training process, from pre-processing to final model selection.
+In this analysis, we trained three different models: Multiple Linear Regression (MLR), LASSO Regression, and Multivariate Adaptive Regression Splines (MARS). We ultimately selected MARS as the final model. The following sections provides each step in the model training process, from pre-processing to final model selection.
 
 ## Data Pre-processing
 
-Before modeling, the data underwent the following pre-processing steps:
+* We ensured that there were no missing values in the training data, missing data were imputed or removed.
 
-* Handling Missing Values: We ensured that there were no missing values in the training data. Any missing data would be imputed or removed as appropriate.
+* Continuous variables were untouched, while categorical variables were converted to factor types (such as race, gender, smoking). 
 
-* Feature Engineering: Continuous variables were used as they were, while categorical variables were converted to factor types (such as race, gender, smoking). 
-
-* Log Transformation: The response variable, log antibody, was log-transformed to normalize its distribution and reduce skewness.
-
-* Also transformed the data
+* The response variable, log antibody, was log-transformed to normalize its distribution and reduce skewness.
 
 ## Multiple Linear Regression (MLR) Model 
 
@@ -82,58 +78,70 @@ The model was trained using the lm() function and the training process involved 
 mlr_model <- lm(log_antibody ~ ., data = train_data)
 \end{verbatim}
 
-
-The summary results (Figure 7) residuals showed a reasonable fit with no large deviations. Key predictors such as age, gender, bmi, and smoking status showed statistically significant effects, while others, such as race and diabetes, did not appear significant based on p-values.
-
 The coefficients were estimated through OLS regression, and the residuals were checked for normality. The model was trained on the entire training dataset, and no regularization was applied.
-
-The training outcome included the estimated coefficients for each feature in the dataset, with significance levels for each predictor.
-
-Overall, the Root Mean Squared Error (RMSE) was 0.544. 
 
 
 ## LASSO Model 
 
 To address potential multi-collinearity and perform feature selection, we used LASSO Regression, applying L1 regularization to shrink the coefficients of less important features to zero. The LASSO model was trained using the glmnet package. 
 
+Since  LASSO is sensitive to differences in scale among predictor variables, numerical predictors were standardized before training to ensure fair comparison across variables. The preProcess() function from the caret package was used. The same transformations were applied to the validation and test datasets to maintain consistency.
+
 The training procedure involved:
 
-*1 Creating a matrix of predictor variables (x) and a vector of the response variable (y)
+1. Creating a matrix of predictor variables (x) and a vector of the response variable (y)
 
-*2 Using cross-validation to select the best lambda (regularization parameter) based on the model’s performance. The model with the lowest cross-validation error was used for evaluation.
+2. Using cross-validation to select the best lambda (regularization parameter) based on the model’s performance. The model with the lowest cross-validation error was used for evaluation.
 
 \begin{verbatim}
-
 lasso_model <- cv.glmnet(x_train, y_train, alpha = 1)
-
 best_lambda <- lasso_model$lambda.min
 lasso_final <- glmnet(x_train, y_train, alpha = 1, lambda = best_lambda)
-
 \end{verbatim}
 
 
-The Root Mean Squared Error (RMSE) for LASSO was calculated as 0.544, similar to MLR, indicating comparable predictive performance.
-
 ## Multivariate Adaptive Regression Splines (MARS) Model 
 
-Non-linear regression MARS model automatically selects the best interactions and non-linear transformations of predictors. 
+Non-linear regression MARS model automatically selects the best interactions and non-linear transformations of predictors. We first trained the MARS model without tuning, the used cross-validation to finetune it and determine the optimal number of terms and the degree of interactions. 
 
-We first trained the MARS model without tuning. This resulted in a complex model of about 13 terms and multiple interactions selected. While it provided a reasonable fit, we sought to prune the model to avoid overfitting.
+\begin{verbatim}
+mars_model <- earth(log_antibody ~ ., data = train_data)
 
-We fine-tuned the MARS model using cross-validation to determine the optimal number of terms and the degree of interactions. The best parameters were selected as follows:
+mars_tune <- train(log_antibody ~ ., data = train_data, method = "earth", 
+                   trControl = train_control, tuneGrid = tune_grid)
+mars_model_tune <- train(log_antibody ~ ., 
+                         data = train_data, 
+                         method = "earth", 
+                         trControl = train_control, 
+                         tuneGrid = data.frame(nprune = 10, degree = 1))
+\end{verbatim}
 
-* nprune = 10: The final model had 10 terms, which were selected based on the lowest Generalized Cross Validation (GCV) score.
+
+The best parameters were selected as follows:
+
+* nprune = 10: The final model had 10 terms (lowest Generalized Cross Validation score)
 
 * degree = 1: The degree of interaction was set to 1, which considers only pairwise interactions between features.
-
-We then fit the final MARS model with those tuned parameters. The RMSE for the tuned MARS model was 0.528, which was slightly better than the MLR and LASSO models. This suggests that the MARS model, after tuning, offers improved predictive performance while avoiding over-fitting.
-
-Based on the RMSE and the results of model selection, MARS was chosen as the final model due to its superior performance and ability to capture complex non-linear relationships between the predictors and the antibody levels. The final MARS model with 10 terms and degree 1 interactions was retained for further evaluation.
-
 
 
 # Results 
 
+MLR Model:
+
+The summary results (Figure 7) residuals showed a reasonable fit with no large deviations. Key predictors such as age, gender, bmi, and smoking status showed statistically significant effects, while others, such as race and diabetes, did not appear significant based on p-values.
+Overall, the Root Mean Squared Error (RMSE) was 0.544. 
+
+LASSO Model:
+
+The Root Mean Squared Error (RMSE) for LASSO was calculated as 0.544, similar to MLR, indicating comparable predictive performance.
+
+MARS Model:
+
+The intial MARS model resulted in a complex model of 13 terms and multiple interactions selected. While it provided a reasonable fit, we sought to prune the model to avoid overfitting.
+
+We then fit the final MARS model with those tuned parameters. The RMSE for the tuned MARS model was 0.528, which was slightly better than the MLR and LASSO models. This suggests that the MARS model, after tuning, offers improved predictive performance while avoiding over-fitting.
+
+Based on the RMSE and the results of model selection, MARS was chosen as the final model due to its superior performance and ability to capture complex non-linear relationships between the predictors and the antibody levels. The final MARS model with 10 terms and degree 1 interactions was retained for further evaluation (Figure 8).
 
 
 \newpage
@@ -321,7 +329,23 @@ plot_age
 
 ```
 
-```{r}
+```{r, eval=FALSE}
+library(knitr)
+library(kableExtra)
 
+summary_table <- summary(mlr_model)$coefficients
+kable(summary_table, digits = 4, caption = "Figure 7. Regression Coefficients for MLR Model") %>%
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover"))
+```
+
+```{r, eval=FALSE}
+library(knitr)
+library(kableExtra)
+
+mars_model <- earth(log_antibody ~ ., data = train_data)
+summary(mars_model)
+
+kable(summary_table, digits = 4, caption = "Figure 8. Regression Coefficients for MARS Model") %>%
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover"))
 ```
 
