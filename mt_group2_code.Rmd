@@ -285,28 +285,21 @@ dat1 <- dat1 %>% select(-id)
 dat2 <- dat2 %>% select(-id)
 ```
 
-```{r}
-# Split training data into training (80%) and validation (20%)
-set.seed(123)
-train_index <- createDataPartition(dat1$log_antibody, p = 0.8, list = FALSE)
-train_data <- dat1[train_index, ]
-valid_data <- dat1[-train_index, ]
-```
-
-
 ## Training multiple linear regression model 
 
 ```{r}
-mlr_model <- lm(log_antibody ~ ., data = train_data)
+mlr_model <- lm(log_antibody ~ ., data = dat1)
 summary(mlr_model)
 ```
 
 
 ```{r}
 # Evaluating model performance on validation data
-mlr_pred <- predict(mlr_model, newdata = valid_data)
-mlr_rmse <- sqrt(mean((mlr_pred - valid_data$log_antibody)^2))
+mlr_pred <- predict(mlr_model, newdata = dat2)
+mlr_rmse <- sqrt(mean((mlr_pred - dat2$log_antibody)^2))
+mlr_adj_r2 <- summary(mlr_model)$adj.r.squared
 mlr_rmse
+mlr_adj_r2
 ```
 
 ## Training LASSO regression model
@@ -316,25 +309,23 @@ mlr_rmse
 ```{r}
 num_vars <- c("age", "height", "weight", "bmi", "sbp", "ldl", "time") #only continuous variable
 
-preprocess_params <- preProcess(train_data[, num_vars], method = c("center", "scale"))
-train_data[, num_vars] <- predict(preprocess_params, train_data[, num_vars])
-valid_data[, num_vars] <- predict(preprocess_params, valid_data[, num_vars])
-dat2[, num_vars] <- predict(preprocess_params, dat2[, num_vars]) # Applying same transformation to test data
+preprocess_params <- preProcess(dat1[, num_vars], method = c("center", "scale"))
+dat1[, num_vars] <- predict(preprocess_params, dat1[, num_vars])
+dat2[, num_vars] <- predict(preprocess_params, dat2[, num_vars])
 ```
 
 ```{r}
 # Preparing the data matrices for glmnet
-x_train <- model.matrix(log_antibody ~ ., train_data)[, -1]  # Removing the intercept
-y_train <- train_data$log_antibody
+x_train <- model.matrix(log_antibody ~ ., dat1)[, -1]  # Removing the intercept
+y_train <- dat1$log_antibody
 
-x_valid <- model.matrix(log_antibody ~ ., valid_data)[, -1]
-y_valid <- valid_data$log_antibody
+x_valid <- model.matrix(log_antibody ~ ., dat2)[, -1]
+y_valid <- dat2$log_antibody
 ```
 
 ```{r}
 set.seed(123)
 lasso_model <- cv.glmnet(x_train, y_train, alpha = 1) # LASSO with cross validation
-
 best_lambda <- lasso_model$lambda.min
 lasso_final <- glmnet(x_train, y_train, alpha = 1, lambda = best_lambda) # final model is based on optimal lambda
 ```
@@ -348,7 +339,13 @@ lasso_rmse
 
 ```
 ```{r}
-pseudo_r2= lasso_final$dev.ratio
+ss_total_lasso <- sum((y_valid - mean(y_valid))^2)
+ss_res_lasso <- sum((lasso_pred - y_valid)^2)
+r_squared_lasso <- 1 - ss_res_lasso / ss_total_lasso
+n <- length(y_valid)
+p <- length(coef(lasso_final)) - 1
+lasso_adj_r2 <- 1 - ((1 - r_squared_lasso) * (n - 1) / (n - p - 1))
+
 system.time(glmnet(x_train, y_train, alpha = 1, lambda = best_lambda))
 ```
 
@@ -356,15 +353,16 @@ system.time(glmnet(x_train, y_train, alpha = 1, lambda = best_lambda))
 ## Training MARS model 
 
 ```{r}
-mars_model <- earth(log_antibody ~ ., data = train_data)
+mars_model <- earth(log_antibody ~ ., data = dat1)
 summary(mars_model)
 ```
 
 ```{r}
 # predicting with MARS on validation data
+mars_pred <- predict(mars_model, newdata = dat2)
+mars_rmse <- sqrt(mean((mars_pred - dat2$log_antibody)^2))
 
-mars_pred <- predict(mars_model, newdata = valid_data)
-mars_rmse <- sqrt(mean((mars_pred - valid_data$log_antibody)^2))
+
 mars_rmse
 ```
 
@@ -376,7 +374,7 @@ mars_rmse
 tune_grid <- expand.grid(degree = 1:3, nprune = seq(5, 50, by = 5))
 
 train_control <- trainControl(method = "cv", number = 10)
-mars_tune <- train(log_antibody ~ ., data = train_data, method = "earth", 
+mars_tune <- train(log_antibody ~ ., data = dat1, method = "earth", 
                    trControl = train_control, tuneGrid = tune_grid)
 
 mars_tune$bestTune
@@ -387,15 +385,30 @@ train_control <- trainControl(method = "cv", number = 10)
 
 # Train the MARS model with best tuning parameters
 mars_model_tune <- train(log_antibody ~ ., 
-                         data = train_data, 
+                         data = dat1, 
                          method = "earth", 
                          trControl = train_control, 
                          tuneGrid = data.frame(nprune = 10, degree = 1))
 
 summary(mars_model_tune)
 
-mars_tune_pred <- predict(mars_model_tune, newdata = valid_data)
-mars_tune_rmse <- sqrt(mean((mars_tune_pred - valid_data$log_antibody)^2))
+mars_tune_pred <- predict(mars_model_tune, newdata = dat2)
+mars_tune_rmse <- sqrt(mean((mars_tune_pred - dat2$log_antibody)^2))
+
+# Compute R-squared
+ss_total_mars <- sum((dat2$log_antibody - mean(dat2$log_antibody))^2)
+ss_res_mars <- sum((mars_tune_pred - dat2$log_antibody)^2)
+r_squared_mars <- 1 - ss_res_mars / ss_total_mars
+
+# Get n and number of selected terms (p)
+n <- nrow(dat2)
+p <- length(mars_model_tune$finalModel$selected.terms)
+
+# Adjusted R-squared for MARS
+mars_adj_r2 <- 1 - ((1 - r_squared_mars) * (n - 1) / (n - p - 1))
+
+# Print result
+mars_adj_r2
 mars_tune_rmse
 ```
 
@@ -411,6 +424,30 @@ plot(mars_model, which = 1)
 # Results
 
 ```{r}
+# Summary table
+model_perf <- tibble(
+  Model = c("Multiple Linear Regression (MLR)", 
+            "LASSO Regression", 
+            "MARS (Final, Tuned)"),
+  RMSE = c(mlr_rmse, lasso_rmse, mars_tune_rmse),
+  `Adjusted R-squared` = c(mlr_adj_r2, lasso_adj_r2, mars_adj_r2),
+  Notes = c("Baseline model; assumes linear relationships",
+            "Performs variable selection via L1 regularization",
+            "Best performance; captures non-linear effects")
+)
 
+model_perf %>%
+  gt() %>%
+  tab_header(
+    title = "Table: Model Performance on Independent Test Set (dat2)"
+  ) %>%
+  cols_label(
+    Model = "Model",
+    RMSE = "RMSE ↓",
+    `Adjusted R-squared` = "Adjusted R-squared↑",
+    Notes = "Notes"
+  ) %>%
+  fmt_number(columns = c(RMSE, `Adjusted R-squared`), decimals = 3) %>%
+  tab_options(table.font.size = "small")
 ```
 

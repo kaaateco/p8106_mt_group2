@@ -13,7 +13,6 @@ header-includes:
 - \usepackage[small]{titlesec} 
 urlcolor: blue
 ---
-
 ```{r setup, include=FALSE}
 
 knitr::opts_chunk$set(
@@ -38,7 +37,6 @@ library(earth)
 
 
 ```
-
 # Introduction
 
 In this project, our team explored the dataset collected from a study on evaluating antibody responses to a newly authorized vaccine. The primary outcome of interest is the log-transformed antibody level measured via dried blood spots. The dataset includes a range of demographic and clinical predictors such as age, gender, race/ethnicity, smoking status, BMI, chronic conditions, and time since vaccination.
@@ -52,8 +50,6 @@ Our full combined dataset includes 6,000 patients and contains demographic and h
 Patients in both datasets have similar demographic and health characteristics (Table 1), but patients from the second collected dataset have a greater time since receiving the vaccine (an additional few months), and therefore slightly lower observed log-transformed antibody levels (Figures 1 and 2). Because we are more likely to observe lower antibody levels from patients in the testing dataset, it's possible that this difference may impact the prediction performance of our models, which are trained using the initial dataset. After plotting the most correlated quantitative variables versus log-transformed antibody level, we can see that the fitted line for the testing data is always flatter than the line of the training data, indicating a weaker relationship between these variables and the response (Figures 7-9). 
 
 Across gender and smoking status, there were very slight differences in the observed antibody levels. Women had slightly greater antibody responses than men overall (Figure 3 and Table 2), while current smokers had slightly lower antibody responses than former and never-smokers (Figure 5 and Table 4). There were no observed differences in antibody responses across race (Figure 4 and Table 3). The quantitative variables that were most correlated with log-transformed antibody level were BMI, weight, and age. It's important to note that several predictors are also correlated with each other, such as BMI and weight, BMI and height, and SBP and age (Figure 6), which will impact variable selection. 
-
-
 
 # Model Training
 
@@ -75,7 +71,7 @@ The model was trained using the lm() function and the training process involved 
 
 
 \begin{verbatim}
-mlr_model <- lm(log_antibody ~ ., data = train_data)
+mlr_model <- lm(log_antibody ~ ., data = dat1)
 \end{verbatim}
 
 The coefficients were estimated through OLS regression, and the residuals were checked for normality. The model was trained on the entire training dataset, and no regularization was applied.
@@ -105,12 +101,12 @@ lasso_final <- glmnet(x_train, y_train, alpha = 1, lambda = best_lambda)
 Non-linear regression MARS model automatically selects the best interactions and non-linear transformations of predictors. We first trained the MARS model without tuning, the used cross-validation to finetune it and determine the optimal number of terms and the degree of interactions. 
 
 \begin{verbatim}
-mars_model <- earth(log_antibody ~ ., data = train_data)
+mars_model <- earth(log_antibody ~ ., data = dat1)
 
-mars_tune <- train(log_antibody ~ ., data = train_data, method = "earth", 
+mars_tune <- train(log_antibody ~ ., data = dat1, method = "earth", 
                    trControl = train_control, tuneGrid = tune_grid)
 mars_model_tune <- train(log_antibody ~ ., 
-                         data = train_data, 
+                         data = dat1, 
                          method = "earth", 
                          trControl = train_control, 
                          tuneGrid = data.frame(nprune = 10, degree = 1))
@@ -126,25 +122,15 @@ The best parameters were selected as follows:
 
 # Results 
 
-MLR Model:
+After testing three different models — Multiple Linear Regression (MLR), LASSO Regression, and Multivariate Adaptive Regression Splines (MARS) — we selected the final model based on performance evaluated on an independent test dataset (dat2). The decision was guided by two key metrics: Root Mean Squared Error (RMSE), which measures average prediction error (lower is better), and Adjusted R-squared, which accounts for model complexity and estimates the proportion of variation in antibody response explained by the model (higher is better).
 
-The summary results (Figure 7) residuals showed a reasonable fit with no large deviations. Key predictors such as age, gender, bmi, and smoking status showed statistically significant effects, while others, such as race and diabetes, did not appear significant based on p-values.
-Overall, the Root Mean Squared Error (RMSE) was 0.544. 
+The MARS model achieved the best performance, with an RMSE of 0.533 and an adjusted R-squared of 0.169, indicating that it explained about 17% of the variation in antibody response in the test dataset. In contrast, the Multiple Linear Regression model had a higher RMSE of 0.568 and a lower adjusted R-squared of 0.149, while the LASSO model, which automatically selects features, had the same RMSE as MLR (0.568) but a substantially lower adjusted R-squared of only 0.048. These results suggest that MARS not only provided the most accurate predictions but also captured more meaningful variation in the outcome compared to the other two models.
 
-LASSO Model:
+The final MARS model included both main effects and non-linear terms selected through internal tuning, allowing it to account for relationships that aren't strictly linear. For example, rather than assuming that BMI affects antibody levels in a straight line, MARS can capture thresholds or changes in direction — such as the effect of BMI being stronger in certain age groups or tapering off at higher values. This flexibility likely contributed to its improved performance.
 
-The Root Mean Squared Error (RMSE) for LASSO was calculated as 0.544, similar to MLR, indicating comparable predictive performance.
-
-MARS Model:
-
-The intial MARS model resulted in a complex model of 13 terms and multiple interactions selected. While it provided a reasonable fit, we sought to prune the model to avoid overfitting.
-
-We then fit the final MARS model with those tuned parameters. The RMSE for the tuned MARS model was 0.528, which was slightly better than the MLR and LASSO models. This suggests that the MARS model, after tuning, offers improved predictive performance while avoiding over-fitting.
-
-Based on the RMSE and the results of model selection, MARS was chosen as the final model due to its superior performance and ability to capture complex non-linear relationships between the predictors and the antibody levels. The final MARS model with 10 terms and degree 1 interactions was retained for further evaluation (Figure 8).
-
-
+Although adjusted R-squared is traditionally reserved for linear models, we adapted the formula for the MARS model by using the number of selected basis functions to represent model complexity. While this provides a rough but interpretable estimate of fit, we emphasize that RMSE is a more appropriate metric of predictive accuracy in non-linear settings like MARS. Nonetheless, reporting adjusted R-squared alongside RMSE allows for meaningful comparison across models using a consistent standard.
 \newpage
+
 
 ```{r}
 
