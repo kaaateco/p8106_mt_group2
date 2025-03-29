@@ -314,7 +314,7 @@ mlr_rmse
 ### Standardizing numerical variables for LASSO 
 
 ```{r}
-num_vars <- c("age", "height", "weight", "bmi", "sbp", "ldl", "time")
+num_vars <- c("age", "height", "weight", "bmi", "sbp", "ldl", "time") #only continuous variable
 
 preprocess_params <- preProcess(train_data[, num_vars], method = c("center", "scale"))
 train_data[, num_vars] <- predict(preprocess_params, train_data[, num_vars])
@@ -345,6 +345,11 @@ lasso_final <- glmnet(x_train, y_train, alpha = 1, lambda = best_lambda) # final
 lasso_pred <- predict(lasso_final, newx = x_valid)
 lasso_rmse <- sqrt(mean((lasso_pred - y_valid)^2))
 lasso_rmse
+
+```
+```{r}
+pseudo_r2= lasso_final$dev.ratio
+system.time(glmnet(x_train, y_train, alpha = 1, lambda = best_lambda))
 ```
 
 
