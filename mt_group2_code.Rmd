@@ -15,6 +15,17 @@ library(kableExtra)
 library(caret)
 library(glmnet) 
 library(earth) 
+library(mlbench)
+library(pROC)
+library(pdp)
+library(vip)
+library(AppliedPredictiveModeling)
+library(ISLR)
+library(pls)
+library(tidymodels)
+library(mgcv)
+library(pdp)
+
 ```
 
 # Exploratory Analysis 
@@ -288,10 +299,27 @@ dat2 <- dat2 %>% select(-id)
 ## Training multiple linear regression model 
 
 ```{r}
+# train control
+set.seed(123)
+ctrl1 = trainControl(method = "cv", number = 10)
+```
+
+```{r}
 mlr_model <- lm(log_antibody ~ ., data = dat1)
 summary(mlr_model)
 ```
 
+```{r}
+##using caret to see the difference in model result
+mlr_fit <- train(
+  log_antibody ~ ., 
+  data = dat1, 
+  method = "lm",
+  trControl = ctrl1
+)
+
+summary(mlr_fit)
+```
 
 ```{r}
 # Evaluating model performance on validation data
@@ -302,9 +330,19 @@ mlr_rmse
 mlr_adj_r2
 ```
 
+```{r}
+mlr_caret_pred <- predict(mlr_fit, newdata = dat2)
+mlr_caret_rmse <- sqrt(mean((mlr_caret_pred - dat2$log_antibody)^2))
+mlr_adj_r2_caret <- summary(mlr_fit)$adj.r.squared
+mlr_caret_rmse
+mlr_adj_r2_caret
+```
+
+To confirm consistency, we also fit the final linear regression model using the caret package in addition to the standard lm() function. Both approaches produced identical results in terms of coefficients, RMSE, and adjusted R-squared, confirming that the modeling framework did not influence the outcome. This consistency supports the reliability of our findings regardless of the implementation method.
+
 ## Training LASSO regression model
 
-### Standardizing numerical variables for LASSO 
+### Standardizing numerical variables for LASSO using glmnet
 
 ```{r}
 num_vars <- c("age", "height", "weight", "bmi", "sbp", "ldl", "time") #only continuous variable
@@ -332,23 +370,49 @@ lasso_final <- glmnet(x_train, y_train, alpha = 1, lambda = best_lambda) # final
 
 ```{r}
 # predicting with LASSO on validation data
-
+best_lambda
 lasso_pred <- predict(lasso_final, newx = x_valid)
 lasso_rmse <- sqrt(mean((lasso_pred - y_valid)^2))
 lasso_rmse
-
-```
-```{r}
 ss_total_lasso <- sum((y_valid - mean(y_valid))^2)
 ss_res_lasso <- sum((lasso_pred - y_valid)^2)
 r_squared_lasso <- 1 - ss_res_lasso / ss_total_lasso
 n <- length(y_valid)
 p <- length(coef(lasso_final)) - 1
 lasso_adj_r2 <- 1 - ((1 - r_squared_lasso) * (n - 1) / (n - p - 1))
+lasso_adj_r2
+```
+### using caret package for LASSO to compare the difference between the two methodologies (packages)
+```{r}
+## using caret for LASSO prediction
+set.seed(123)
+lasso_fit=train(y=y_train,
+                  x=x_train,
+                  method = "glmnet",
+                  tuneGrid = expand.grid(alpha = 1, 
+                                         lambda = exp(seq(1, -10, length = 1000))),  # range selected to perform well across a log-scale. Using fine-grid of 1000 values for precision
+                  preProcess = c("center", "scale"),
+                  trControl = ctrl1)
 
-system.time(glmnet(x_train, y_train, alpha = 1, lambda = best_lambda))
+# selected tuning parameter and test error
+lasso_caret_best_lambda = lasso_fit$bestTune$lambda
+predy2_lasso_caret_fit = predict(lasso_fit, newdata = x_valid)
+lasso_caret_rmse = sqrt(mean((y_valid - predy2_lasso_caret_fit)^2))
+
+lasso_caret_best_lambda
+lasso_caret_rmse
+
+ss_total_lasso_caret <- sum((y_valid - mean(y_valid))^2)
+ss_res_lasso_caret <- sum((predy2_lasso_caret_fit - y_valid)^2)
+r_squared_lasso_caret <- 1 - ss_res_lasso_caret / ss_total_lasso_caret
+n <- length(y_valid)
+p <- length(coef(lasso_fit$finalModel, s = lasso_caret_best_lambda)) - 1
+lasso_adj_r2_caret <- 1 - ((1 - r_squared_lasso_caret) * (n - 1) / (n - p - 1))
+
+lasso_adj_r2_caret
 ```
 
+The LASSO models built using both the glmnet and caret packages produced nearly identical results, with matching RMSE values (0.5684) and very similar adjusted R-squared values (0.0484 vs. 0.0482). This close agreement confirms that the modeling outcome is consistent across both approaches, and that the choice of package did not meaningfully affect the predictive performance.
 
 ## Training MARS model 
 
@@ -362,7 +426,6 @@ summary(mars_model)
 mars_pred <- predict(mars_model, newdata = dat2)
 mars_rmse <- sqrt(mean((mars_pred - dat2$log_antibody)^2))
 
-
 mars_rmse
 ```
 
@@ -373,28 +436,42 @@ mars_rmse
 ```{r}
 tune_grid <- expand.grid(degree = 1:3, nprune = seq(5, 50, by = 5))
 
-train_control <- trainControl(method = "cv", number = 10)
 mars_tune <- train(log_antibody ~ ., data = dat1, method = "earth", 
-                   trControl = train_control, tuneGrid = tune_grid)
+                   trControl = ctrl1, tuneGrid = tune_grid)
 
-mars_tune$bestTune
+print(mars_tune$bestTune)
+ggplot(mars_tune)
 ```
 
 ```{r}
-train_control <- trainControl(method = "cv", number = 10)
 
 # Train the MARS model with best tuning parameters
 mars_model_tune <- train(log_antibody ~ ., 
                          data = dat1, 
                          method = "earth", 
-                         trControl = train_control, 
+                         trControl = ctrl1,
                          tuneGrid = data.frame(nprune = 10, degree = 1))
 
 summary(mars_model_tune)
+print(mars_model_tune$bestTune)
+
+# Report the final model (regression function)
+print(coef(mars_model_tune$finalModel))
 
 mars_tune_pred <- predict(mars_model_tune, newdata = dat2)
 mars_tune_rmse <- sqrt(mean((mars_tune_pred - dat2$log_antibody)^2))
+mars_tune_rmse
+```
 
+
+```{r}
+# variable importance plot for MARS
+vip(mars_model_tune$finalModel, type = "nsubsets")
+vip(mars_model_tune$finalModel, type = "rss")
+```
+
+
+```{r}
 # Compute R-squared
 ss_total_mars <- sum((dat2$log_antibody - mean(dat2$log_antibody))^2)
 ss_res_mars <- sum((mars_tune_pred - dat2$log_antibody)^2)
@@ -407,11 +484,10 @@ p <- length(mars_model_tune$finalModel$selected.terms)
 # Adjusted R-squared for MARS
 mars_adj_r2 <- 1 - ((1 - r_squared_mars) * (n - 1) / (n - p - 1))
 
-# Print result
+
 mars_adj_r2
 mars_tune_rmse
 ```
-
 
 ```{r}
 plot(mars_model)
@@ -422,6 +498,17 @@ plot(mars_model, which = 1)
 \newpage
 
 # Results
+
+```{r}
+res <- resamples(list(MLR = mlr_fit, 
+                      LASSO = lasso_fit,
+                      MARS = mars_model_tune))
+summary(res)
+# boxplot of RMSE performance for all models
+
+bwplot(res, metric = "RMSE")
+```
+To ensure consistency across models, we trained the all three model using the caret package as well (model results using different methodologies were comparable) so it would be directly comparable to the others. This allowed us to evaluate all models under the same cross-validation framework and use the resamples() function for side-by-side performance comparison. By aligning the training method, we kept the evaluation fair and consistent across approaches.
 
 ```{r}
 # Summary table

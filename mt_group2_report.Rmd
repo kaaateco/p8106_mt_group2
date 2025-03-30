@@ -121,14 +121,13 @@ The best parameters were selected as follows:
 
 
 # Results 
+We tested three models to predict antibody response after vaccination: a basic linear regression model (MLR), a LASSO model that selects key predictors, and a MARS model that captures more complex, nonlinear relationships. All models were trained on one dataset and evaluated on an independent test set to assess how well they generalize to new data.
 
-After testing three different models — Multiple Linear Regression (MLR), LASSO Regression, and Multivariate Adaptive Regression Splines (MARS) — we selected the final model based on performance evaluated on an independent test dataset (dat2). The decision was guided by two key metrics: Root Mean Squared Error (RMSE), which measures average prediction error (lower is better), and Adjusted R-squared, which accounts for model complexity and estimates the proportion of variation in antibody response explained by the model (higher is better).
+Based on Table 5, the MARS model achieved the lowest prediction error on the test set (RMSE = 0.533) and explained the greatest variation in antibody levels (adjusted R² = 0.169). Both MLR and LASSO had higher errors (both RMSE = 0.568), and LASSO explained very little variability (adjusted R² = 0.048). These results suggest that MARS is better suited for this dataset, which likely contains interactions and non-linear effects — especially in variables like BMI, age, and time since vaccination (Figure 6) — that linear models aren’t equipped to handle. Linear models assume straight-line relationships between predictors and outcome, which can lead to oversimplified or biased predictions when the data is more complex.
 
-The MARS model achieved the best performance, with an RMSE of 0.533 and an adjusted R-squared of 0.169, indicating that it explained about 17% of the variation in antibody response in the test dataset. In contrast, the Multiple Linear Regression model had a higher RMSE of 0.568 and a lower adjusted R-squared of 0.149, while the LASSO model, which automatically selects features, had the same RMSE as MLR (0.568) but a substantially lower adjusted R-squared of only 0.048. These results suggest that MARS not only provided the most accurate predictions but also captured more meaningful variation in the outcome compared to the other two models.
+Cross validation results (Figure 10) supported this conclusion. MARS had the lowest median RMSE across folds, reinforcing its advantage in predictive accuracy. That said, its performance was slightly more variable than the linear model, which showed tighter consistency across folds. This trade-off is common: MARS brings flexibility and adaptability, while linear models offer simplicity and stability. From a modeling perspective, neither is universally better — it depends on the context.
 
-The final MARS model included both main effects and non-linear terms selected through internal tuning, allowing it to account for relationships that aren't strictly linear. For example, rather than assuming that BMI affects antibody levels in a straight line, MARS can capture thresholds or changes in direction — such as the effect of BMI being stronger in certain age groups or tapering off at higher values. This flexibility likely contributed to its improved performance.
-
-Although adjusted R-squared is traditionally reserved for linear models, we adapted the formula for the MARS model by using the number of selected basis functions to represent model complexity. While this provides a rough but interpretable estimate of fit, we emphasize that RMSE is a more appropriate metric of predictive accuracy in non-linear settings like MARS. Nonetheless, reporting adjusted R-squared alongside RMSE allows for meaningful comparison across models using a consistent standard.
+In this case, MARS was the better choice because it captured the underlying complexity of the data more effectively. But in other situations — especially when relationships are mostly linear, datasets are small, or model interpretability is a priority — a linear model might be preferred. MARS outperforms when relationships are unknown and need to be discovered automatically, while linear models remain valuable for clarity and general reliability. Model selection should always reflect the structure of the data and the goals of the analysis.
 \newpage
 
 
@@ -320,18 +319,77 @@ library(knitr)
 library(kableExtra)
 
 summary_table <- summary(mlr_model)$coefficients
-kable(summary_table, digits = 4, caption = "Figure 7. Regression Coefficients for MLR Model") %>%
+kable(summary_table, digits = 4, caption = "Figure 11. Regression Coefficients for MLR Model") %>%
   kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover"))
 ```
 
-```{r, eval=FALSE}
+```{r,  eval=FALSE}
 library(knitr)
 library(kableExtra)
 
 mars_model <- earth(log_antibody ~ ., data = train_data)
 summary(mars_model)
 
-kable(summary_table, digits = 4, caption = "Figure 8. Regression Coefficients for MARS Model") %>%
+kable(summary_table, digits = 4, caption = "Figure 12. Regression Coefficients for MARS Model") %>%
   kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover"))
+```
+
+```{r, message=FALSE}
+library(tibble)
+library(gt)
+
+# Manually entering model performance values
+model_perf <- tibble(
+  Model = c("Multiple Linear Regression (MLR)", 
+            "LASSO Regression", 
+            "MARS (Final, Tuned)"),
+  RMSE = c(0.568, 0.568, 0.533),
+  `Adjusted R-squared` = c(0.149, 0.048, 0.169),
+  Notes = c("Baseline model; assumes linear relationships",
+            "Performs variable selection via L1 regularization",
+            "Best performance; captures non-linear effects")
+)
+
+model_perf %>%
+  gt() %>%
+  tab_header(
+    title = "Table 5: Model Performance on Independent Test Set (dat2)"
+  ) %>%
+  cols_label(
+    Model = "Model",
+    RMSE = "RMSE ↓",
+    `Adjusted R-squared` = "Adjusted R-squared↑",
+    Notes = "Notes"
+  ) %>%
+  fmt_number(columns = c(RMSE, `Adjusted R-squared`), decimals = 3) %>%
+  tab_options(table.font.size = "small")
+```
+
+```{r, message = FALSE}
+library(lattice)
+
+# Manually recreating RMSE values using summaries of each model (in the code document)
+rmse_data <- data.frame(
+  Model = factor(rep(c("MLR", "LASSO", "MARS"), each = 5)),
+  RMSE = c(
+    # MLR
+    0.5177740, 0.5501364, 0.5528559, 0.5583168, 0.5674625,
+    # LASSO
+    0.5362151, 0.5422491, 0.5529600, 0.5572990, 0.5834269,
+    # MARS
+    0.5150003, 0.5188694, 0.5258153, 0.5335379, 0.5444253
+  )
+)
+
+# Plotting the bwplot
+bwplot(Model ~ RMSE,
+       data = rmse_data,
+       main = "Figure 10: 10-Fold Cross-Validation RMSE Comparison",
+       xlab = "RMSE",
+       ylab = "Model",
+       panel = function(...){
+         panel.bwplot(...)
+         panel.grid(h = 0, v = -1)
+       })
 ```
 
