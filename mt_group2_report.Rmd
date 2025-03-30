@@ -111,11 +111,11 @@ The best parameters were selected as follows:
 # Model Evaluation and Results 
 To evaluate predictors of log antibody response, we trained three models using the original dataset (dat1): Multiple Linear Regression (MLR), LASSO Regression, and Multivariate Adaptive Regression Splines (MARS). Each model was then tested on an independent dataset (dat2) to assess generalizability. Model performance was evaluated using Root Mean Squared Error (RMSE), which captures prediction accuracy, and Adjusted R-squared (Adj. R²), which measures the proportion of variability explained while accounting for model complexity.
 
-Among the three models, MARS model (Table 6) showed the best overall performance, with the lowest RMSE (0.533) and the highest adjusted R² (0.169). Both MLR and LASSO had identical RMSE values (0.568), but MLR explained more variance (Adj. R² = 0.149) than LASSO (Adj. R² = 0.048), suggesting that LASSO may have underfit slightly by shrinking less informative predictors. These results are summarized in Table 7.
+Among the three models, MARS model (Table 6) showed the best overall performance, with the lowest RMSE (0.533) and the highest adjusted R² (0.169). Both MLR and LASSO had identical RMSE values (0.568), but MLR explained more variance (Adj. R² = 0.149) than LASSO (Adj. R² = 0.110), suggesting that LASSO may have underfit slightly by shrinking less informative predictors. These results are summarized in Table 7.
 
 MARS was particularly well-suited for this dataset because of its ability to flexibly model non-linear relationships and interactions, which are common in immune response data. Variables like age, BMI, and time since vaccination are unlikely to relate to antibody levels in a strictly linear way (Figure 6). While linear models assume constant change across the predictor range, MARS allows for thresholds and curve shapes that better reflect biological processes. This likely contributed to its stronger performance on the test set.
 
-We also assessed model stability using 10-fold cross-validation through the caret package and compared RMSE distributions across models (Figure 10). MARS had the lowest median RMSE, reinforcing its predictive strength, though its variability across folds was slightly wider than MLR. This reflects a common trade-off: MARS offers more flexibility but may be slightly more variable; linear models are simpler and more stable, but risk missing important patterns.
+We also compared model performance by resampling each model through the caret package and compared RMSE distributions across models (Figure 10). MARS had the lowest median RMSE, reinforcing its predictive strength, though its variability across folds was slightly wider than MLR. MARS model captured threshold effects and non-linear trends (e.g., antibody response plateauing with age or BMI), which linear models cannot.
 
 The variables chosen by the final MARS model were age, gender, BMI, smoking status, and time since vaccination. Being a man and a current smoker were found to have the biggest impacts on antibody response. Specifically, being a man was associated with a lower antibody response compared to being a woman (beta = -0.2963) and being a current smoker was associated with a lower antibody response compared to being a former or never-smoker (beta = -0.2051). 
 
@@ -313,6 +313,8 @@ plot_age
 ```{r}
 library(knitr)
 library(kableExtra)
+dat1 <- dat1 %>% select(-id)
+dat2 <- dat2 %>% select(-id)
 mlr_model <- lm(log_antibody ~ ., data = dat1)
 
 summary_table_mlr <- coef(summary(mlr_model))[, "Estimate", drop = FALSE] %>%
@@ -324,6 +326,7 @@ kable(summary_table_mlr, digits = 4,
   kable_styling(latex_options = c("striped", "hold_position"), 
                 font_size = 11)
 ```
+\vspace{0.5cm} 
 ```{r}
 library(knitr)
 library(kableExtra)
@@ -360,7 +363,7 @@ rmse_data <- data.frame(
 # Plotting the bwplot
 bwplot(Model ~ RMSE,
        data = rmse_data,
-       main = "Figure 10: 10-Fold Cross-Validation RMSE Comparison",
+       main = "Figure 10: Model Performance Comparison: RMSE Across Resamples",
        xlab = "RMSE",
        ylab = "Model",
        panel = function(...){
@@ -378,7 +381,7 @@ model_perf <- data.frame(
             "LASSO Regression", 
             "MARS"),
   RMSE = c(0.568, 0.568, 0.533),
-  Adjusted_R_squared = c(0.149, 0.048, 0.169),
+  Adjusted_R_squared = c(0.149, 0.110, 0.169),
   Notes = c("Baseline model; assumes linear relationships",
             "Performs variable selection via L1 regularization",
             "Best performance; captures non-linear effects")

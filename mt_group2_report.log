@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.10.7)  30 MAR 2025 01:25
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.9.20)  30 MAR 2025 09:14
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -700,15 +700,15 @@ LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 2
 (/usr/local/texlive/2024/texmf-dist/tex/latex/lm/ts1lmr.fd
 File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 ) [2] [3{/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/lm/lm-ts1.enc}]
-LaTeX Font Info:    Calculating math sizes for size <7.5> on input line 309.
+LaTeX Font Info:    Calculating math sizes for size <7.5> on input line 308.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <7.5> on input line 309.
+(Font)              <7.5> on input line 308.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <5.24997> on input line 309.
+(Font)              <5.24997> on input line 308.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <3.75> on input line 309.
+(Font)              <3.75> on input line 308.
 
-Underfull \hbox (badness 10000) in paragraph at lines 338--340
+Underfull \hbox (badness 10000) in paragraph at lines 337--339
 
  []
 
@@ -718,7 +718,7 @@ File: mt_group2_report_files/figure-latex/unnamed-chunk-3-1.pdf Graphic file (t
 ype pdf)
 <use mt_group2_report_files/figure-latex/unnamed-chunk-3-1.pdf>
 Package pdftex.def Info: mt_group2_report_files/figure-latex/unnamed-chunk-3-1.
-pdf  used on input line 343.
+pdf  used on input line 342.
 (pdftex.def)             Requested size: 446.27666pt x 320.07547pt.
 <mt_group2_report_files/figure-latex/unnamed-chunk-3-2.pdf, id=34, 489.83pt x 3
 51.3125pt>
@@ -726,7 +726,7 @@ File: mt_group2_report_files/figure-latex/unnamed-chunk-3-2.pdf Graphic file (t
 ype pdf)
 <use mt_group2_report_files/figure-latex/unnamed-chunk-3-2.pdf>
 Package pdftex.def Info: mt_group2_report_files/figure-latex/unnamed-chunk-3-2.
-pdf  used on input line 345.
+pdf  used on input line 344.
 (pdftex.def)             Requested size: 446.27666pt x 320.07547pt.
 [4 <./mt_group2_report_files/figure-latex/unnamed-chunk-3-1.pdf>]
 <mt_group2_report_files/figure-latex/unnamed-chunk-4-1.pdf, id=53, 489.83pt x 3
@@ -735,7 +735,7 @@ File: mt_group2_report_files/figure-latex/unnamed-chunk-4-1.pdf Graphic file (t
 ype pdf)
 <use mt_group2_report_files/figure-latex/unnamed-chunk-4-1.pdf>
 Package pdftex.def Info: mt_group2_report_files/figure-latex/unnamed-chunk-4-1.
-pdf  used on input line 347.
+pdf  used on input line 346.
 (pdftex.def)             Requested size: 446.27666pt x 320.07547pt.
 <mt_group2_report_files/figure-latex/unnamed-chunk-4-2.pdf, id=54, 489.83pt x 3
 51.3125pt>
@@ -743,7 +743,7 @@ File: mt_group2_report_files/figure-latex/unnamed-chunk-4-2.pdf Graphic file (t
 ype pdf)
 <use mt_group2_report_files/figure-latex/unnamed-chunk-4-2.pdf>
 Package pdftex.def Info: mt_group2_report_files/figure-latex/unnamed-chunk-4-2.
-pdf  used on input line 349.
+pdf  used on input line 348.
 (pdftex.def)             Requested size: 446.27666pt x 320.07547pt.
 [5 <./mt_group2_report_files/figure-latex/unnamed-chunk-3-2.pdf> <./mt_group2_r
 eport_files/figure-latex/unnamed-chunk-4-1.pdf>]
@@ -753,27 +753,27 @@ File: mt_group2_report_files/figure-latex/unnamed-chunk-4-3.pdf Graphic file (t
 ype pdf)
 <use mt_group2_report_files/figure-latex/unnamed-chunk-4-3.pdf>
 Package pdftex.def Info: mt_group2_report_files/figure-latex/unnamed-chunk-4-3.
-pdf  used on input line 351.
+pdf  used on input line 350.
 (pdftex.def)             Requested size: 446.27666pt x 320.07547pt.
-LaTeX Font Info:    Calculating math sizes for size <8.2> on input line 356.
+LaTeX Font Info:    Calculating math sizes for size <8.2> on input line 355.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <8.2> on input line 356.
+(Font)              <8.2> on input line 355.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <5.73996> on input line 356.
+(Font)              <5.73996> on input line 355.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <4.09999> on input line 356.
+(Font)              <4.09999> on input line 355.
 
-Underfull \hbox (badness 10000) in paragraph at lines 364--366
+Underfull \hbox (badness 10000) in paragraph at lines 363--365
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 379--381
+Underfull \hbox (badness 10000) in paragraph at lines 378--380
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 394--396
+Underfull \hbox (badness 10000) in paragraph at lines 393--395
 
  []
 
@@ -783,7 +783,7 @@ File: mt_group2_report_files/figure-latex/unnamed-chunk-6-1.pdf Graphic file (t
 ype pdf)
 <use mt_group2_report_files/figure-latex/unnamed-chunk-6-1.pdf>
 Package pdftex.def Info: mt_group2_report_files/figure-latex/unnamed-chunk-6-1.
-pdf  used on input line 399.
+pdf  used on input line 398.
 (pdftex.def)             Requested size: 402.51505pt x 355.33745pt.
 [6 <./mt_group2_report_files/figure-latex/unnamed-chunk-4-2.pdf> <./mt_group2_r
 eport_files/figure-latex/unnamed-chunk-4-3.pdf>]
@@ -793,7 +793,7 @@ File: mt_group2_report_files/figure-latex/unnamed-chunk-7-1.pdf Graphic file (t
 ype pdf)
 <use mt_group2_report_files/figure-latex/unnamed-chunk-7-1.pdf>
 Package pdftex.def Info: mt_group2_report_files/figure-latex/unnamed-chunk-7-1.
-pdf  used on input line 401.
+pdf  used on input line 400.
 (pdftex.def)             Requested size: 422.78526pt x 301.4944pt.
 [7 <./mt_group2_report_files/figure-latex/unnamed-chunk-6-1.pdf>]
 <mt_group2_report_files/figure-latex/unnamed-chunk-7-2.pdf, id=122, 489.83pt x 
@@ -802,7 +802,7 @@ File: mt_group2_report_files/figure-latex/unnamed-chunk-7-2.pdf Graphic file (t
 ype pdf)
 <use mt_group2_report_files/figure-latex/unnamed-chunk-7-2.pdf>
 Package pdftex.def Info: mt_group2_report_files/figure-latex/unnamed-chunk-7-2.
-pdf  used on input line 403.
+pdf  used on input line 402.
 (pdftex.def)             Requested size: 422.78526pt x 303.22713pt.
 <mt_group2_report_files/figure-latex/unnamed-chunk-7-3.pdf, id=123, 489.83pt x 
 351.3125pt>
@@ -810,25 +810,25 @@ File: mt_group2_report_files/figure-latex/unnamed-chunk-7-3.pdf Graphic file (t
 ype pdf)
 <use mt_group2_report_files/figure-latex/unnamed-chunk-7-3.pdf>
 Package pdftex.def Info: mt_group2_report_files/figure-latex/unnamed-chunk-7-3.
-pdf  used on input line 405.
+pdf  used on input line 404.
 (pdftex.def)             Requested size: 422.78526pt x 303.22713pt.
 [8 <./mt_group2_report_files/figure-latex/unnamed-chunk-7-1.pdf> <./mt_group2_r
 eport_files/figure-latex/unnamed-chunk-7-2.pdf>] [9 <./mt_group2_report_files/f
 igure-latex/unnamed-chunk-7-3.pdf>]
-<mt_group2_report_files/figure-latex/unnamed-chunk-10-1.pdf, id=170, 472.76625p
+<mt_group2_report_files/figure-latex/unnamed-chunk-10-1.pdf, id=170, 474.77374p
 t x 339.2675pt>
 File: mt_group2_report_files/figure-latex/unnamed-chunk-10-1.pdf Graphic file (
 type pdf)
 <use mt_group2_report_files/figure-latex/unnamed-chunk-10-1.pdf>
 Package pdftex.def Info: mt_group2_report_files/figure-latex/unnamed-chunk-10-1
-.pdf  used on input line 458.
-(pdftex.def)             Requested size: 422.78772pt x 303.4018pt.
+.pdf  used on input line 457.
+(pdftex.def)             Requested size: 422.79361pt x 302.12312pt.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <10> on input line 474.
+(Font)              <10> on input line 473.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <7> on input line 474.
+(Font)              <7> on input line 473.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <5> on input line 474.
+(Font)              <5> on input line 473.
 [10 <./mt_group2_report_files/figure-latex/unnamed-chunk-10-1.pdf>] (./mt_group
 2_report.aux)
  ***********
@@ -855,7 +855,7 @@ s/type1/public/lm/lmr12.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/pub
 lic/lm/lmr17.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/lm/lmr8
 .pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/lm/lmri7.pfb></usr/
 local/texlive/2024/texmf-dist/fonts/type1/public/lm/lmtt10.pfb>
-Output written on mt_group2_report.pdf (10 pages, 1362721 bytes).
+Output written on mt_group2_report.pdf (10 pages, 1362671 bytes).
 PDF statistics:
  257 PDF objects out of 1000 (max. 8388607)
  194 compressed objects within 2 object streams

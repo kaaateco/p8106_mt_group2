@@ -363,9 +363,9 @@ y_valid <- dat2$log_antibody
 
 ```{r}
 set.seed(123)
-lasso_model <- cv.glmnet(x_train, y_train, alpha = 1) # LASSO with cross validation
+lasso_model <- cv.glmnet(x_train, y_train, alpha = 1, standardize = TRUE) # LASSO with cross validation
 best_lambda <- lasso_model$lambda.min
-lasso_final <- glmnet(x_train, y_train, alpha = 1, lambda = best_lambda) # final model is based on optimal lambda
+lasso_final <- glmnet(x_train, y_train, alpha = 1, lambda = best_lambda, standardize = TRUE) # final model is based on optimal lambda
 ```
 
 ```{r}
@@ -374,13 +374,13 @@ best_lambda
 lasso_pred <- predict(lasso_final, newx = x_valid)
 lasso_rmse <- sqrt(mean((lasso_pred - y_valid)^2))
 lasso_rmse
-ss_total_lasso <- sum((y_valid - mean(y_valid))^2)
-ss_res_lasso <- sum((lasso_pred - y_valid)^2)
-r_squared_lasso <- 1 - ss_res_lasso / ss_total_lasso
+
+r2_glmnet <- cor(lasso_pred, y_valid)^2
 n <- length(y_valid)
-p <- length(coef(lasso_final)) - 1
-lasso_adj_r2 <- 1 - ((1 - r_squared_lasso) * (n - 1) / (n - p - 1))
-lasso_adj_r2
+p <- sum(coef(lasso_final, s = "lambda.min") != 0) - 1
+lasso_adj_r2 <- 1 - ((1 - r2_glmnet) * (n - 1) / (n - p - 1))
+
+lasso_adj_r2[1]
 ```
 ### using caret package for LASSO to compare the difference between the two methodologies (packages)
 ```{r}
@@ -390,7 +390,7 @@ lasso_fit=train(y=y_train,
                   x=x_train,
                   method = "glmnet",
                   tuneGrid = expand.grid(alpha = 1, 
-                                         lambda = exp(seq(1, -10, length = 1000))),  # range selected to perform well across a log-scale. Using fine-grid of 1000 values for precision
+                                         lambda = exp(seq(-10, 1, length = 1000))),  # range selected to perform well across a log-scale.
                   preProcess = c("center", "scale"),
                   trControl = ctrl1)
 
@@ -402,12 +402,12 @@ lasso_caret_rmse = sqrt(mean((y_valid - predy2_lasso_caret_fit)^2))
 lasso_caret_best_lambda
 lasso_caret_rmse
 
-ss_total_lasso_caret <- sum((y_valid - mean(y_valid))^2)
-ss_res_lasso_caret <- sum((predy2_lasso_caret_fit - y_valid)^2)
-r_squared_lasso_caret <- 1 - ss_res_lasso_caret / ss_total_lasso_caret
-n <- length(y_valid)
-p <- length(coef(lasso_fit$finalModel, s = lasso_caret_best_lambda)) - 1
-lasso_adj_r2_caret <- 1 - ((1 - r_squared_lasso_caret) * (n - 1) / (n - p - 1))
+test_results <- postResample(pred = predict(lasso_fit, newdata = x_valid), 
+                             obs = y_valid)
+test_results
+
+p_caret <- sum(coef(lasso_fit$finalModel, s = lasso_fit$bestTune$lambda) != 0) - 1
+lasso_adj_r2_caret <- 1 - ((1 - test_results["Rsquared"]) * (n - 1) / (n - p_caret - 1))
 
 lasso_adj_r2_caret
 ```
