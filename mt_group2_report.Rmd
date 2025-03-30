@@ -13,6 +13,11 @@ header-includes:
 - \usepackage[small]{titlesec} 
 urlcolor: blue
 ---
+
+```{=latex}
+\vspace{-1.5cm}
+```
+
 ```{r setup, include=FALSE}
 
 knitr::opts_chunk$set(
@@ -37,14 +42,13 @@ library(earth)
 
 
 ```
-# Introduction
 
+# Introduction
 In this project, our team explored the dataset collected from a study on evaluating antibody responses to a newly authorized vaccine. The primary outcome of interest is the log-transformed antibody level measured via dried blood spots. The dataset includes a range of demographic and clinical predictors such as age, gender, race/ethnicity, smoking status, BMI, chronic conditions, and time since vaccination.
 
-Our goal is to develop a predictive model that characterizes how these factors influence antibody responses and asses how well this model generalizes to a new independent dataset collected at a later time point. By doing so, we hope to identify key predictors of antibody levels and evaluate the robustness/generalizability of our model across different dataset. 
+Our goal is to develop a predictive model that characterizes how these factors influence antibody responses and asses how well this model generalizes to a new independent dataset collected at a later time point. By doing so, we hope to identify key predictors of antibody levels and evaluate the generalizability of our model across different dataset. 
 
 # Exploratory Analysis 
-
 Our full combined dataset includes 6,000 patients and contains demographic and health information, time since the patient received the vaccine, and log-transformed antibody level. There are two different subsets of data: data on 5,000 patients was initially collected for model training, and data on 1,000 additional patients was independently collected several months later for model testing and evaluation. 
 
 Patients in both datasets have similar demographic and health characteristics (Table 1), but patients from the second collected dataset have a greater time since receiving the vaccine (an additional few months), and therefore slightly lower observed log-transformed antibody levels (Figures 1 and 2). Because we are more likely to observe lower antibody levels from patients in the testing dataset, it's possible that this difference may impact the prediction performance of our models, which are trained using the initial dataset. After plotting the most correlated quantitative variables versus log-transformed antibody level, we can see that the fitted line for the testing data is always flatter than the line of the training data, indicating a weaker relationship between these variables and the response (Figures 7-9). 
@@ -52,11 +56,9 @@ Patients in both datasets have similar demographic and health characteristics (T
 Across gender and smoking status, there were very slight differences in the observed antibody levels. Women had slightly greater antibody responses than men overall (Figure 3 and Table 2), while current smokers had slightly lower antibody responses than former and never-smokers (Figure 5 and Table 4). There were no observed differences in antibody responses across race (Figure 4 and Table 3). The quantitative variables that were most correlated with log-transformed antibody level were BMI, weight, and age. It's important to note that several predictors are also correlated with each other, such as BMI and weight, BMI and height, and SBP and age (Figure 6), which will impact variable selection. 
 
 # Model Training
-
-In this analysis, we trained three different models: Multiple Linear Regression (MLR), LASSO Regression, and Multivariate Adaptive Regression Splines (MARS). We ultimately selected MARS as the final model. The following sections provides each step in the model training process, from pre-processing to final model selection.
+In this analysis, we trained three different models: Multiple Linear Regression (MLR), LASSO Regression, and Multivariate Adaptive Regression Splines (MARS). The following sections provides each step in the model training process, from pre-processing to final model selection.
 
 ## Data Pre-processing
-
 * We ensured that there were no missing values in the training data, missing data were imputed or removed.
 
 * Continuous variables were untouched, while categorical variables were converted to factor types (such as race, gender, smoking). 
@@ -64,7 +66,6 @@ In this analysis, we trained three different models: Multiple Linear Regression 
 * The response variable, log antibody, was log-transformed to normalize its distribution and reduce skewness.
 
 ## Multiple Linear Regression (MLR) Model 
-
 We started by fitting a MLR model with all available predictors in the dataset and the model was fit using ordinary least squares regression (OLS).
 
 The model was trained using the lm() function and the training process involved fitting the model to the data, estimating the regression coefficients for each predictor, and computing the residuals. The code below was used:
@@ -74,11 +75,9 @@ The model was trained using the lm() function and the training process involved 
 mlr_model <- lm(log_antibody ~ ., data = dat1)
 \end{verbatim}
 
-The coefficients were estimated through OLS regression, and the residuals were checked for normality. The model was trained on the entire training dataset, and no regularization was applied.
-
+The coefficients were estimated through OLS regression, and the residuals were checked for normality. The model was trained on the entire training dataset, and no regularization was applied.(Table 5)
 
 ## LASSO Model 
-
 To address potential multi-collinearity and perform feature selection, we used LASSO Regression, applying L1 regularization to shrink the coefficients of less important features to zero. The LASSO model was trained using the glmnet package. 
 
 Since  LASSO is sensitive to differences in scale among predictor variables, numerical predictors were standardized before training to ensure fair comparison across variables. The preProcess() function from the caret package was used. The same transformations were applied to the validation and test datasets to maintain consistency.
@@ -97,12 +96,10 @@ lasso_final <- glmnet(x_train, y_train, alpha = 1, lambda = best_lambda)
 
 
 ## Multivariate Adaptive Regression Splines (MARS) Model 
-
-Non-linear regression MARS model automatically selects the best interactions and non-linear transformations of predictors. We first trained the MARS model without tuning, the used cross-validation to finetune it and determine the optimal number of terms and the degree of interactions. 
+Non-linear regression MARS model automatically selects the best interactions and non-linear transformations of predictors. We first trained the MARS model without tuning, the used cross-validation to finetune it and determine the optimal number of terms and the degree of interactions (Table 6). 
 
 \begin{verbatim}
 mars_model <- earth(log_antibody ~ ., data = dat1)
-
 mars_tune <- train(log_antibody ~ ., data = dat1, method = "earth", 
                    trControl = train_control, tuneGrid = tune_grid)
 mars_model_tune <- train(log_antibody ~ ., 
@@ -112,22 +109,22 @@ mars_model_tune <- train(log_antibody ~ .,
                          tuneGrid = data.frame(nprune = 10, degree = 1))
 \end{verbatim}
 
-
 The best parameters were selected as follows:
 
 * nprune = 10: The final model had 10 terms (lowest Generalized Cross Validation score)
 
 * degree = 1: The degree of interaction was set to 1, which considers only pairwise interactions between features.
 
-
 # Results 
-We tested three models to predict antibody response after vaccination: a basic linear regression model (MLR), a LASSO model that selects key predictors, and a MARS model that captures more complex, nonlinear relationships. All models were trained on one dataset and evaluated on an independent test set to assess how well they generalize to new data.
+To evaluate predictors of log antibody response, we trained three models using the original dataset (dat1): Multiple Linear Regression (MLR), LASSO Regression, and Multivariate Adaptive Regression Splines (MARS). Each model was then tested on an independent dataset (dat2) to assess generalizability. Model performance was evaluated using Root Mean Squared Error (RMSE), which captures prediction accuracy, and Adjusted R-squared (Adj. R²), which measures the proportion of variability explained while accounting for model complexity.
 
-Based on Table 5, the MARS model achieved the lowest prediction error on the test set (RMSE = 0.533) and explained the greatest variation in antibody levels (adjusted R² = 0.169). Both MLR and LASSO had higher errors (both RMSE = 0.568), and LASSO explained very little variability (adjusted R² = 0.048). These results suggest that MARS is better suited for this dataset, which likely contains interactions and non-linear effects — especially in variables like BMI, age, and time since vaccination (Figure 6) — that linear models aren’t equipped to handle. Linear models assume straight-line relationships between predictors and outcome, which can lead to oversimplified or biased predictions when the data is more complex.
+Among the three models, MARS model (Table 6) showed the best overall performance, with the lowest RMSE (0.533) and the highest adjusted R² (0.169). Both MLR and LASSO had identical RMSE values (0.568), but MLR explained more variance (Adj. R² = 0.149) than LASSO (Adj. R² = 0.048), suggesting that LASSO may have underfit slightly by shrinking less informative predictors. These results are summarized in Table 7.
 
-Cross validation results (Figure 10) supported this conclusion. MARS had the lowest median RMSE across folds, reinforcing its advantage in predictive accuracy. That said, its performance was slightly more variable than the linear model, which showed tighter consistency across folds. This trade-off is common: MARS brings flexibility and adaptability, while linear models offer simplicity and stability. From a modeling perspective, neither is universally better — it depends on the context.
+MARS was particularly well-suited for this dataset because of its ability to flexibly model non-linear relationships and interactions, which are common in immune response data. Variables like age, BMI, and time since vaccination are unlikely to relate to antibody levels in a strictly linear way (Figure 6). While linear models assume constant change across the predictor range, MARS allows for thresholds and curve shapes that better reflect biological processes. This likely contributed to its stronger performance on the test set.
 
-In this case, MARS was the better choice because it captured the underlying complexity of the data more effectively. But in other situations — especially when relationships are mostly linear, datasets are small, or model interpretability is a priority — a linear model might be preferred. MARS outperforms when relationships are unknown and need to be discovered automatically, while linear models remain valuable for clarity and general reliability. Model selection should always reflect the structure of the data and the goals of the analysis.
+We also assessed model stability using 10-fold cross-validation through the caret package and compared RMSE distributions across models (Figure 10). MARS had the lowest median RMSE, reinforcing its predictive strength, though its variability across folds was slightly wider than MLR. This reflects a common trade-off: MARS offers more flexibility but may be slightly more variable; linear models are simpler and more stable, but risk missing important patterns.
+
+In summary, MARS was selected as the final model due to its ability to handle complex, non-linear patterns in the data and its strong performance on an independent dataset. While it exhibited slightly more variability in resampling, it offered the best balance of accuracy and flexibility. These findings highlight the importance of model selection based on data structure and analysis goals — and support the use of flexible modeling strategies in understanding antibody responses to vaccination. 
 \newpage
 
 
@@ -314,58 +311,38 @@ plot_age
 
 ```
 
-```{r, eval=FALSE}
+```{r}
+library(knitr)
+library(kableExtra)
+mlr_model <- lm(log_antibody ~ ., data = dat1)
+
+summary_table_mlr <- coef(summary(mlr_model))[, "Estimate", drop = FALSE] %>%
+  as.data.frame() %>%
+  rownames_to_column(var = "Term")
+
+kable(summary_table_mlr, digits = 4, 
+      caption = "Regression Coefficients for MLR Model") %>%
+  kable_styling(latex_options = c("striped", "hold_position"), 
+                font_size = 11)
+```
+```{r}
 library(knitr)
 library(kableExtra)
 
-summary_table <- summary(mlr_model)$coefficients
-kable(summary_table, digits = 4, caption = "Figure 11. Regression Coefficients for MLR Model") %>%
-  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover"))
-```
+mars_model <- earth(log_antibody ~ ., data = dat1)
+summary_table_mars <- coef(mars_model)
 
-```{r,  eval=FALSE}
-library(knitr)
-library(kableExtra)
-
-mars_model <- earth(log_antibody ~ ., data = train_data)
-summary(mars_model)
-
-kable(summary_table, digits = 4, caption = "Figure 12. Regression Coefficients for MARS Model") %>%
-  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover"))
-```
-
-```{r, message=FALSE}
-library(tibble)
-library(gt)
-
-# Manually entering model performance values
-model_perf <- tibble(
-  Model = c("Multiple Linear Regression (MLR)", 
-            "LASSO Regression", 
-            "MARS (Final, Tuned)"),
-  RMSE = c(0.568, 0.568, 0.533),
-  `Adjusted R-squared` = c(0.149, 0.048, 0.169),
-  Notes = c("Baseline model; assumes linear relationships",
-            "Performs variable selection via L1 regularization",
-            "Best performance; captures non-linear effects")
+mars_coef_df <- data.frame(
+  Term = names(summary_table_mars),
+  Estimate = as.numeric(summary_table_mars)
 )
 
-model_perf %>%
-  gt() %>%
-  tab_header(
-    title = "Table 5: Model Performance on Independent Test Set (dat2)"
-  ) %>%
-  cols_label(
-    Model = "Model",
-    RMSE = "RMSE ↓",
-    `Adjusted R-squared` = "Adjusted R-squared↑",
-    Notes = "Notes"
-  ) %>%
-  fmt_number(columns = c(RMSE, `Adjusted R-squared`), decimals = 3) %>%
-  tab_options(table.font.size = "small")
+kable(mars_coef_df, digits = 4, caption = "Regression Coefficients for MARS Model") %>%
+  kable_styling(latex_options = c("striped", "hold_position"), 
+                font_size = 11)
 ```
 
-```{r, message = FALSE}
+```{r, message=FALSE, out.width="90%", fig.align = "center"}
 library(lattice)
 
 # Manually recreating RMSE values using summaries of each model (in the code document)
@@ -393,3 +370,26 @@ bwplot(Model ~ RMSE,
        })
 ```
 
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+library(kableExtra)
+
+# Manually entering model performance values
+model_perf <- data.frame(
+  Model = c("Multiple Linear Regression (MLR)", 
+            "LASSO Regression", 
+            "MARS"),
+  RMSE = c(0.568, 0.568, 0.533),
+  Adjusted_R_squared = c(0.149, 0.048, 0.169),
+  Notes = c("Baseline model; assumes linear relationships",
+            "Performs variable selection via L1 regularization",
+            "Best performance; captures non-linear effects")
+)
+
+model_perf %>%
+  kbl(caption = "Model Performance on Independent Test Set (dat2)",
+      col.names = c("Model", "RMSE", "Adjusted R-squared", "Notes"),  # <- clean names
+      booktabs = TRUE,
+      align = c("l", "c", "c", "l")) %>%
+  kable_styling(latex_options = c("striped", "hold_position", "scale_down"),
+                font_size = 10)
+```
