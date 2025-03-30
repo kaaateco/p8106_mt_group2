@@ -199,7 +199,7 @@ cor_matrix <- dat %>%
          "Log(Antibody)" = log_antibody) %>% 
   cor()
 
-cor_plot <- corrplot(cor_matrix,  
+cor_plot <- corrplot::corrplot(cor_matrix,  
                      main = "Figure 6: Correlation Matrix of Numerical Variables", 
                      mar=c(0,0,1,0), cex.main = 1,
                      method = "color", 
@@ -464,7 +464,7 @@ mars_tune_rmse
 ```
 
 
-```{r}
+```{r, out.width = "90%", fig.align = "center"}
 # variable importance plot for MARS
 vip(mars_model_tune$finalModel, type = "nsubsets")
 vip(mars_model_tune$finalModel, type = "rss")
@@ -504,11 +504,16 @@ res <- resamples(list(MLR = mlr_fit,
                       LASSO = lasso_fit,
                       MARS = mars_model_tune))
 summary(res)
-# boxplot of RMSE performance for all models
 
+# boxplot of RMSE performance for all models
 bwplot(res, metric = "RMSE")
 ```
+
+>
+
 To ensure consistency across models, we trained the all three model using the caret package as well (model results using different methodologies were comparable) so it would be directly comparable to the others. This allowed us to evaluate all models under the same cross-validation framework and use the resamples() function for side-by-side performance comparison. By aligning the training method, we kept the evaluation fair and consistent across approaches.
+
+>
 
 ```{r}
 # Summary table
@@ -520,20 +525,15 @@ model_perf <- tibble(
   `Adjusted R-squared` = c(mlr_adj_r2, lasso_adj_r2, mars_adj_r2),
   Notes = c("Baseline model; assumes linear relationships",
             "Performs variable selection via L1 regularization",
-            "Best performance; captures non-linear effects")
-)
+            "Best performance; captures non-linear effects"))
 
 model_perf %>%
   gt() %>%
-  tab_header(
-    title = "Table: Model Performance on Independent Test Set (dat2)"
-  ) %>%
+  tab_header(title = "Table: Model Performance on Independent Test Set (dat2)") %>%
   cols_label(
     Model = "Model",
     RMSE = "RMSE ↓",
-    `Adjusted R-squared` = "Adjusted R-squared↑",
-    Notes = "Notes"
-  ) %>%
+    `Adjusted R-squared` = "Adjusted R-squared↑", Notes = "Notes") %>%
   fmt_number(columns = c(RMSE, `Adjusted R-squared`), decimals = 3) %>%
   tab_options(table.font.size = "small")
 ```

@@ -44,9 +44,9 @@ library(earth)
 ```
 
 # Introduction
-In this project, our team explored the dataset collected from a study on evaluating antibody responses to a newly authorized vaccine. The primary outcome of interest is the log-transformed antibody level measured via dried blood spots. The dataset includes a range of demographic and clinical predictors such as age, gender, race/ethnicity, smoking status, BMI, chronic conditions, and time since vaccination.
+In this project, our team investigated antibody responses to a newly authorized vaccine. The primary outcome of interest is patient log-transformed antibody level measured via dried blood spots. This dataset includes a range of demographic and clinical predictors, such as age, gender, race/ethnicity, smoking status, BMI, chronic conditions, and time since vaccination.
 
-Our goal is to develop a predictive model that characterizes how these factors influence antibody responses and asses how well this model generalizes to a new independent dataset collected at a later time point. By doing so, we hope to identify key predictors of antibody levels and evaluate the generalizability of our model across different dataset. 
+Our goal is to develop a predictive model that characterizes how these factors influence antibody responses and asses how well this model generalizes to a new independent dataset collected at a later time point. By doing so, we hope to identify key predictors of antibody response and evaluate the generalizability of our model across different dataset. 
 
 # Exploratory Analysis 
 Our full combined dataset includes 6,000 patients and contains demographic and health information, time since the patient received the vaccine, and log-transformed antibody level. There are two different subsets of data: data on 5,000 patients was initially collected for model training, and data on 1,000 additional patients was independently collected several months later for model testing and evaluation. 
@@ -58,15 +58,8 @@ Across gender and smoking status, there were very slight differences in the obse
 # Model Training
 In this analysis, we trained three different models: Multiple Linear Regression (MLR), LASSO Regression, and Multivariate Adaptive Regression Splines (MARS). The following sections provides each step in the model training process, from pre-processing to final model selection.
 
-## Data Pre-processing
-* We ensured that there were no missing values in the training data, missing data were imputed or removed.
-
-* Continuous variables were untouched, while categorical variables were converted to factor types (such as race, gender, smoking). 
-
-* The response variable, log antibody, was log-transformed to normalize its distribution and reduce skewness.
-
 ## Multiple Linear Regression (MLR) Model 
-We started by fitting a MLR model with all available predictors in the dataset and the model was fit using ordinary least squares regression (OLS).
+We started by fitting a MLR model with all available predictors in the dataset using ordinary least squares regression (OLS).
 
 The model was trained using the lm() function and the training process involved fitting the model to the data, estimating the regression coefficients for each predictor, and computing the residuals. The code below was used:
 
@@ -75,7 +68,7 @@ The model was trained using the lm() function and the training process involved 
 mlr_model <- lm(log_antibody ~ ., data = dat1)
 \end{verbatim}
 
-The coefficients were estimated through OLS regression, and the residuals were checked for normality. The model was trained on the entire training dataset, and no regularization was applied.(Table 5)
+The coefficients were estimated through OLS regression, and the residuals were checked for normality. The model was trained on the entire training dataset, and no regularization was applied. (Table 5)
 
 ## LASSO Model 
 To address potential multi-collinearity and perform feature selection, we used LASSO Regression, applying L1 regularization to shrink the coefficients of less important features to zero. The LASSO model was trained using the glmnet package. 
@@ -115,7 +108,7 @@ The best parameters were selected as follows:
 
 * degree = 1: The degree of interaction was set to 1, which considers only pairwise interactions between features.
 
-# Results 
+# Model Evaluation and Results 
 To evaluate predictors of log antibody response, we trained three models using the original dataset (dat1): Multiple Linear Regression (MLR), LASSO Regression, and Multivariate Adaptive Regression Splines (MARS). Each model was then tested on an independent dataset (dat2) to assess generalizability. Model performance was evaluated using Root Mean Squared Error (RMSE), which captures prediction accuracy, and Adjusted R-squared (Adj. R²), which measures the proportion of variability explained while accounting for model complexity.
 
 Among the three models, MARS model (Table 6) showed the best overall performance, with the lowest RMSE (0.533) and the highest adjusted R² (0.169). Both MLR and LASSO had identical RMSE values (0.568), but MLR explained more variance (Adj. R² = 0.149) than LASSO (Adj. R² = 0.048), suggesting that LASSO may have underfit slightly by shrinking less informative predictors. These results are summarized in Table 7.
@@ -124,7 +117,13 @@ MARS was particularly well-suited for this dataset because of its ability to fle
 
 We also assessed model stability using 10-fold cross-validation through the caret package and compared RMSE distributions across models (Figure 10). MARS had the lowest median RMSE, reinforcing its predictive strength, though its variability across folds was slightly wider than MLR. This reflects a common trade-off: MARS offers more flexibility but may be slightly more variable; linear models are simpler and more stable, but risk missing important patterns.
 
+The variables chosen by the final MARS model were age, gender, BMI, smoking status, and time since vaccination. Being a man and a current smoker were found to have the biggest impacts on antibody response. Specifically, being a man was associated with a lower antibody response compared to being a woman (beta = -0.2963) and being a current smoker was associated with a lower antibody response compared to being a former or never-smoker (beta = -0.2051). 
+
 In summary, MARS was selected as the final model due to its ability to handle complex, non-linear patterns in the data and its strong performance on an independent dataset. While it exhibited slightly more variability in resampling, it offered the best balance of accuracy and flexibility. These findings highlight the importance of model selection based on data structure and analysis goals — and support the use of flexible modeling strategies in understanding antibody responses to vaccination. 
+
+For the patients in this study, BMI, gender, age, smoking status, and time since receiving the vaccine were the most important predictors of antibody response. The impact of demographic and clinical factors on antibody responses to vaccines is an important area that warrants further study; this research can be used by patients, doctors, and public health officials to inform clinical decision-making and health policy. 
+
+
 \newpage
 
 
